@@ -1,0 +1,1 @@
+% The resulted sequence is the same for Mac and PC.

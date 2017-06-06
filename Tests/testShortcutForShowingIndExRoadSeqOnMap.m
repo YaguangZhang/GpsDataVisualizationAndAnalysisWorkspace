@@ -1,0 +1,3 @@
+delete(high)
+high =geoshow(lati(indicesExtendedRoadSequence), long(indicesExtendedRoadSequence), ...
+            'Color', 'green', 'LineWidth', 2, 'LineStyle', '--');

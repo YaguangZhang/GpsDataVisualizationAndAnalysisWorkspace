@@ -1,0 +1,2 @@
+setAValue;
+b=a;
