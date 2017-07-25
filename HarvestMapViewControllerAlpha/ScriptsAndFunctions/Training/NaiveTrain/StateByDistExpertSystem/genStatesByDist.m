@@ -27,9 +27,12 @@ DISTANCE_NEARBY_VEHICLES = 20; % In meters.
 % distance goes beyond the sum of these two parameters.
 DISTANCE_NEARBY_VEHICLES_PADDING = 1; % In meters.
 % Time threshold. Note: 5s was used for generate data for manual labeling
-% the states. Now we use 25s to get a better performance (by getting rid of
+% the states. Now we use 30s to get a better performance (by getting rid of
 % passing by situations).
-MIN_TIME_BEING_NEARBY_TO_TAKE_ACTIONS = 25; % In seconds.
+MIN_TIME_BEING_NEARBY_TO_TAKE_ACTIONS = 30; % In seconds.
+% For segment to be classified as unloading, the majority should be
+% unloading to the left hand side.
+MIN_RATIO_UNLOAD_TO_LEFT = 0.5;
 
 % Initialize statesByDist.
 statesByDist = cell(length(files),1);

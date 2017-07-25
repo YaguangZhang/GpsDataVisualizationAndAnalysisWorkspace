@@ -22,7 +22,8 @@ fieldShape = enhancedFieldShapes{idxField};
 % ----------------------------
 % Production version.
 % ----------------------------
-[ harvestedPts ] = statisticalHarvestTruc( files(indicesFilesToUse), ...
+[ harvestedPts, fieldShapeUtm ] = statisticalHarvestTruc( ...
+    files(indicesFilesToUse), ...
     indicesFilesToUse, ...
     statesRef, fieldShape, gridWidth );
 % ----------------------------
@@ -49,24 +50,24 @@ save([fileName, '.mat'], 'harvestedPts');
 
 % Figures.
 numHarvPts = length(harvestedPts);
-[ xs, ys, lats, lons, harvPros, idsMostLikelyCom ] = deal(nan(numHarvPts,1));
+[ xsF, ysF, latsF, lonsF, harvProsF, idsMostLikelyComF ] = deal(nan(numHarvPts,1));
 for idxHarvPt = 1:numHarvPts
-    xs(idxHarvPt) = harvestedPts(idxHarvPt).x;
-    ys(idxHarvPt) = harvestedPts(idxHarvPt).y;
-    lats(idxHarvPt) = harvestedPts(idxHarvPt).lat;
-    lons(idxHarvPt) = harvestedPts(idxHarvPt).lon;
-    harvPros(idxHarvPt) = harvestedPts(idxHarvPt).probOfHarvested;
+    xsF(idxHarvPt) = harvestedPts(idxHarvPt).x;
+    ysF(idxHarvPt) = harvestedPts(idxHarvPt).y;
+    latsF(idxHarvPt) = harvestedPts(idxHarvPt).lat;
+    lonsF(idxHarvPt) = harvestedPts(idxHarvPt).lon;
+    harvProsF(idxHarvPt) = harvestedPts(idxHarvPt).probOfHarvested;
     
     harvLogProbs = harvestedPts(idxHarvPt).harvLogProbs;
     harvLogFileIds = harvestedPts(idxHarvPt).harvLogFileIds;
     idxMostLikelyVeh = find(harvLogProbs==max(harvLogProbs),1);
     if(~isempty(idxMostLikelyVeh))
-        idsMostLikelyCom(idxHarvPt) = harvLogFileIds(idxMostLikelyVeh);
+        idsMostLikelyComF(idxHarvPt) = harvLogFileIds(idxMostLikelyVeh);
     end
 end
 
 hFigHarvProb = figure;
-plot3k([xs, ys, harvPros]);
+plot3k([xsF, ysF, harvProsF]);
 daspectOld = daspect;
 daspectxy = min(daspectOld(1:2));
 daspect([daspectxy,daspectxy,daspectOld(3)]);
@@ -76,7 +77,7 @@ saveas(hFigHarvProb, [fileName, '_harvProb.png']);
 saveas(hFigHarvProb, [fileName, '_harvProb.fig']);
 
 hFigHarvProbWithTrack = figure; hold on;
-plot3k([lons, lats, harvPros],'ColorBar',false);
+plot3k([lonsF, latsF, harvProsF],'ColorBar',false);
 plot3(fieldShape.Points(:,1), fieldShape.Points(:,2), ...
     ones(length(fieldShape.Points(:,1)),1), 'r-', 'LineWidth',0.1);
 plot_google_map; hold off;
@@ -86,12 +87,12 @@ saveas(hFigHarvProbWithTrack, [fileName, '_harvProbOnTrack.png']);
 saveas(hFigHarvProbWithTrack, [fileName, '_harvProbOnTrack.fig']);
 
 hFigMostLikelyCom = figure; hold on;
-uniqIdsMostLikelyCom = unique(idsMostLikelyCom);
+uniqIdsMostLikelyCom = unique(idsMostLikelyComF);
 boolsNanUniqIdsMostLikelyCom = isnan(uniqIdsMostLikelyCom);
 uniqIdsMostLikelyCom(boolsNanUniqIdsMostLikelyCom) = [];
 for idxCom = 1:length(uniqIdsMostLikelyCom)
-    boolsToPlot = idsMostLikelyCom==uniqIdsMostLikelyCom(idxCom);
-    plot(lons(boolsToPlot), lats(boolsToPlot),'.');
+    boolsToPlot = idsMostLikelyComF==uniqIdsMostLikelyCom(idxCom);
+    plot(lonsF(boolsToPlot), latsF(boolsToPlot),'.');
 end
 hold off; plot_google_map('MapType', 'satellite');
 title('Most Likely Combines for Statistical Harvest (Trucated version)');

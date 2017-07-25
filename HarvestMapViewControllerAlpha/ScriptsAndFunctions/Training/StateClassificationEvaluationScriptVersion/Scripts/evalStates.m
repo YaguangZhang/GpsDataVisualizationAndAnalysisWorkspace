@@ -21,6 +21,19 @@ numTracks = length(files);
 assert(length(states) == numTracks);
 assert(length(statesRef) == numTracks);
 
+%% Make Sure All Inputs Are of the Same Number of Samples
+for idxFile = 1:length(files)
+   [numSamsState, ~] = size(states{idxFile});
+   [numSamsStateRef, ~] = size(statesRef{idxFile});
+   numSamsFile = length(files(idxFile).accuracy);
+   expectedNumSams = min([numSamsState; numSamsStateRef; numSamsFile]);
+   if ~all([numSamsState,numSamsStateRef,numSamsFile]==expectedNumSams)
+       states{idxFile} = states{idxFile}(expectedNumSams,:);
+       statesRef{idxFile} = statesRef{idxFile}(expectedNumSams,:);
+       files(idxFile) = subFile(files(idxFile), 1, expectedNumSams);
+   end
+end
+
 %% Is Harvesting Or Not for Combines
 
 disp('-----------------------');

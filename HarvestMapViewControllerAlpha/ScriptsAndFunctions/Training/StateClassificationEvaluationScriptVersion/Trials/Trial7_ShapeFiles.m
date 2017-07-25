@@ -24,12 +24,12 @@ for idxItem = 1:10
     disp('-------------------------');
 end
 
-%% Plot the Shapes on Map
+%% Plot Each Shape on Map
 close all;
 for idxItem = 1:10
     fileName = ['ITEM ',num2str(idxItem)];
     shapeFilePath = fullfile(REL_DIR_SHAPE_FILEFOLDER, fileName);
-    [S, A] = shaperead(shapeFilePath);
+    [S, Area] = shaperead(shapeFilePath);
     
     hFig = figure; plot([S.X],[S.Y],'-b', 'LineWidth',2); 
     plot_google_map('MapType', 'satellite', ...
@@ -38,7 +38,7 @@ for idxItem = 1:10
     
     disp(fileName);
     disp('');
-    disp(A);
+    disp(Area);
     disp('-------------------------');
 end
 

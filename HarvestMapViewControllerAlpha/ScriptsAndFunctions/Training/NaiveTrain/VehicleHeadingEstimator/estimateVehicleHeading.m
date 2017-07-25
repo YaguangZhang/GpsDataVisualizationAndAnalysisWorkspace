@@ -48,6 +48,7 @@ end
 
 MIN_NUM_SAMPLES_EXPECTED = 60; % 1 sample corresponds to ~ 1 second.
 MAX_TIME_BACKING = 60000; % In miliseconds.
+MAX_DIST_BACKING = 90; % In meters.
 
 if length(file.lat)<MIN_NUM_SAMPLES_EXPECTED
     warning(['The GPS track specified by file may be too short to ',...
@@ -126,9 +127,14 @@ if (isempty(indicesStarts))
 end
 
 for idxConMov = 1:length(indicesStarts)
+    startLatLon = [file.lat(indicesStarts(idxConMov)), file.lon(indicesStarts(idxConMov))];
+    endLatLon = [file.lat(indicesEnds(idxConMov)), file.lon(indicesEnds(idxConMov))];
     if (valuesVehHeadingValid(idxConMov) ...
-            && (file.gpsTime(indicesEnds(idxConMov)) ...
-            - file.gpsTime(indicesStarts(idxConMov)))>MAX_TIME_BACKING )
+            && (... 
+            (file.gpsTime(indicesEnds(idxConMov)) ...
+            - file.gpsTime(indicesStarts(idxConMov)))>MAX_TIME_BACKING ... Time test first
+            || lldistkm(startLatLon, endLatLon)*1000>MAX_DIST_BACKING)... Dist test
+            )
         isForwarding(...
             indicesStarts(idxConMov):indicesEnds(idxConMov)...
             ) = 1; % Forwarding.

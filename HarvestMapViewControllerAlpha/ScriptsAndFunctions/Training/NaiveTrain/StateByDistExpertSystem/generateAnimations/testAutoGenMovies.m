@@ -234,7 +234,7 @@ save(...
 disp('-------------------------------------------------------------');
 disp('Generating movies...')
 
-for indexMoviesToGen = 79    %1:numMovies
+for indexMoviesToGen = 4    %1:numMovies
     PLAYBACK_SPEED = 60;
     AXIS_VISIBLE = axisVisibleMovies(indexMoviesToGen,:);
     

@@ -12,13 +12,13 @@ function [ subF ] = subFile(file, idxStart, idxEnd)
 % Yaguang Zhang, Purdue, 05/18/2017
 
 if(nargin<2)
-    error("Not enough inputs.");
+    error('Not enough inputs.');
 elseif(nargin==2)
     I = idxStart;
 elseif(nargin==3)
     I = idxStart:idxEnd;
 else
-    error("Too many inputs.");
+    error('Too many inputs.');
 end
 
 % Fill the fields required.

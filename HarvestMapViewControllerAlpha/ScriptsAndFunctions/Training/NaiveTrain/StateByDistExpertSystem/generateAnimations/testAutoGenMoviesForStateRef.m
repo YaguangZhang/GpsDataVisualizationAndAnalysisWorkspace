@@ -1,6 +1,6 @@
 %TESTAUTOGENMOVIESFORSTATEREF Generate illustration movies for all data
 %available with automatically set time ranges and visible areas, with
-%vehicles draw according to statesRef.
+%vehicles drawn according to statesRef.
 %
 % Revised from testAutoGenMovies.m.
 %

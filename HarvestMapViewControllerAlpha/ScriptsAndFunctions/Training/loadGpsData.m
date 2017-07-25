@@ -12,9 +12,11 @@
 
 % Full paths for the history file.
 if IS_RELATIVE_PATH
-    fileFolder = fullfile(pwd, fileFolder);
+    fileFolderSet = fullfile(pwd, fileFolder);
+else
+    fileFolderSet = fileFolder;
 end
-fileFolderSet = fileFolder;
+
 FULLPATH_FILEFOLDER_FOR_FILES_LOADED_HISTORY = fullfile(fileFolderSet, ...
     '_AUTOGEN_IMPORTANT');
 FULLPATH_FILES_LOADED_HISTORY = fullfile(...

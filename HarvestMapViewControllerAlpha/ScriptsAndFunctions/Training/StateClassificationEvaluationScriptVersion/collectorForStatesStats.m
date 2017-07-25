@@ -1,15 +1,10 @@
-%COLLECTORFORSTATES A GUI collector for the variable states.
+%COLLECTORFORSTATESSTATS Plot ranges of the files to show how much data
+%have been manually labeled by collectorForStates.
 %
-% For performance evaluation of the state classification, we need the
-% correct classification results. This script will create a graphical user
-% interface (GUI) for manually setting the variable states. The results
-% will be saved in the file filesLoadedStates.mat.
+% The time range for files are stacked vertically and black parts are
+% manually labeled.
 %
-% Note: works well using Matlab 2015a.
-%
-% Update (07/03/2017): GUI not working correctly for Matlab 2017a & 2017b.
-%
-% Yaguang Zhang, Purdue, 11/24/2015
+% Yaguang Zhang, Purdue, 07/03/2017
 
 %% User Specified Parameters
 
@@ -18,8 +13,7 @@ FLAG_USE_NAIVETRAIN_RESULTS = true;
 
 % The location of the data set. Please refer to mapViewController for more
 % infomation.
-% fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
+fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
 IS_RELATIVE_PATH = true;
 MIN_SAMPLE_NUM_TO_IGNORE = 20;
 
@@ -177,18 +171,27 @@ else
     disp('Collector: Done!');
 end
 
-%% The Collector for "states"
-
-% Now the variable statesRef is in the workspace. We will create the GUI
-% figure and collect state info. We will set the figure to be visible once
-% the map is ready to be shown.
-
-disp(' ');
-disp('Collector: Please use the GUI to collect info for states...');
-disp('-------------------------------------------------------------');
-
-% Initialize the state collector GUI with necessary parameters.
-addpath(fullfile(fileparts(which(mfilename)),'ScriptsForGUI'));
-collectorForStatesGuiByGuide;
+%% The Progress Plot
+LINE_WIDTH = 5;
+figure; hold on; grid on; grid minor;
+for idxFile=1:length(files)
+    % Plot the ranges for files, with texts indicating the indices.
+    plot([files(idxFile).gpsTime(1),files(idxFile).gpsTime(end)], [idxFile,idxFile], ...
+        'LineWidth', LINE_WIDTH);
+    text(files(idxFile).gpsTime(1), idxFile, num2str(idxFile), ...
+        'HorizontalAlignment', 'left', 'VerticalAlignment', 'top', ...
+        'FontSize', 9);
+end
+for idxFile=1:length(files)
+    % Plot the labeled parts according to statesRefSetFlag.
+    [indicesSs, indicesEs] = ...
+        findConsecutiveSubSeq(statesRefSetFlag{idxFile},1);
+    if (~isempty(indicesSs))
+        yToPlot = idxFile.*ones(2,length(indicesSs));
+        plot([files(idxFile).gpsTime(indicesSs)'; files(idxFile).gpsTime(indicesEs)'], yToPlot, ...
+            'LineWidth', LINE_WIDTH, 'Color','k');
+    end
+end
+hold off;
 
 % EOF

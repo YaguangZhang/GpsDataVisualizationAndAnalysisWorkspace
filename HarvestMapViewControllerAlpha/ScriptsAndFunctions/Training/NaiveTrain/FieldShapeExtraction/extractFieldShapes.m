@@ -28,7 +28,10 @@ setMatlabPath;
 
 % Relative path to the data set.
 % fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests_synchronized');
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+% fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+if ~exist('fileFolder', 'var')
+    fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
+end
 
 try
     pathNaiveTrainResultsFilefolder = fullfile(pwd, fileFolder, ...

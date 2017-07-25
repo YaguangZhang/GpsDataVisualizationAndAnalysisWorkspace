@@ -99,9 +99,9 @@ for idxFile = 1:length(files)
     numSamplesExpected = length(files(idxFile).accuracy);
     if(length(files(idxFile).gpsTime) ~= numSamplesExpected)
         files(idxFile) = subFile(files(idxFile),1,numSamplesExpected);
-        states{idxFile} = states{idxFile}(1:numSamplesExpected,:);
+        states{filesNumIds(idxFile)} = states{filesNumIds(idxFile)}(1:numSamplesExpected,:);
     end
-    
+
     if(strcmp(files(idxFile).type, 'Combine'))
         comFile = files(idxFile);
         comState = states(filesNumIds(idxFile));
@@ -115,13 +115,15 @@ for idxFile = 1:length(files)
                 fieldShape.Points, 'rows') ...
                 & (comState{:,1} == 0);
         end
+        % Update: Add a lower bound of 0 and an upper bound of 4m/s for speed.
+        boolsSamplesToUse = boolsSamplesToUse & (comFile.speed>0) & (comFile.speed<4);
         newFileHarv = subFile(comFile, boolsSamplesToUse);
         if (~isempty(newFileHarv.gpsTime))
             filesHarv(end+1) = newFileHarv; %#ok<AGROW>
             filesHarvIndices(end+1) = idxFile; %#ok<AGROW>
             filesHarvSamplesIndices{end+1} = find(boolsSamplesToUse); %#ok<AGROW>
         end
-        
+
         % [ vehHeading, isForwarding, x, y, utmZones, refBearing, ...
         %    hFigArrOnTrack, hFigDiffHist ] ... = estimateVehicleHeading(
         %    file, DEBUG )
@@ -154,7 +156,7 @@ for idxFileHarv = 1:length(filesHarv)
     gpsTimesHarv(indicesToSet,2) = indicesHarvSamples;
     % GPS times for these samples.
     gpsTimesHarv(indicesToSet,1) = filesHarv(idxFileHarv).gpsTime;
-    
+
     % Other info.
     gpsTimesHarv(indicesToSet,4:5) ...
         = [xs{idxInFiles}(indicesHarvSamples), ...
@@ -163,7 +165,7 @@ for idxFileHarv = 1:length(filesHarv)
         = vehHeadings{idxInFiles}(indicesHarvSamples);
     gpsTimesHarv(indicesToSet,7) = ...
         files(idxInFiles).accuracy(indicesHarvSamples);
-    
+
     idxToSetStart = idxToSetEnd+1;
 end
 
@@ -233,14 +235,14 @@ infoEveryNumOfSample = ...
     floor(numSamplesHarv/10);
 for idxSampleHarv = 1:numSamplesHarv
     if(mod(idxSampleHarv,infoEveryNumOfSample) == 0)
-        toc;
+        %toc;
         disp(['    Progress: ', ...
             num2str(idxSampleHarv/numSamplesHarv*100,'%0.2f'),'% (', ...
             num2str(idxSampleHarv), '/', ...
             num2str(numSamplesHarv),' samples)']);
-        tic;
+        %tic;
     end
-    
+
     idxFileInFiles = gpsTimesHarv(idxSampleHarv,3);
     idxSample = gpsTimesHarv(idxSampleHarv,2);
     % The UTM coordinates for this GPS sample.
@@ -273,7 +275,7 @@ for idxSampleHarv = 1:numSamplesHarv
                 files(idxFileInFiles).accuracy(idxNextSample), ...
                 headerWidth);
         end
-        
+
         % The polygon.
         verticesHarvPoly = [harvPolyEdgeStaPt1; harvPolyEdgeEndPt1; ...
             harvPolyEdgeEndPt2;harvPolyEdgeStaPt2;harvPolyEdgeStaPt1];
@@ -299,16 +301,18 @@ for idxSampleHarv = 1:numSamplesHarv
         if (USE_DEFAULT_DIST)
             % Standard diviation.
             standDev = gpsTimesHarv(idxSampleHarv,7);
-            harvDistribution = @(x) normcdf(x+headerWidth/2,0,standDev) ...
-                - normcdf(x-headerWidth/2,0,standDev);
+            tabletOffset = -0.91;
+            harvDistribution = @(x) ...
+                normcdf(x+headerWidth/2+tabletOffset,0,standDev) ...
+                - normcdf(x-headerWidth/2+tabletOffset,0,standDev);
         end
         for idxIndicesGridPtHarv = 1:length(indicesGridPtHarv)
             idxGridPt = indicesGridPtHarv(idxIndicesGridPtHarv);
             dist = dists(idxIndicesGridPtHarv);
-            
+
             probMargin = 1 - harvestedPts(idxGridPt).probOfHarvested;
             newProbHarv = probMargin*harvDistribution(dist);
-            
+
             harvestedPts(idxGridPt).harvLogFileIds(end+1) ...
                 = gpsTimesHarv(idxSampleHarv,3);
             harvestedPts(idxGridPt).harvLogProbs(end+1) = newProbHarv;
@@ -317,6 +321,7 @@ for idxSampleHarv = 1:numSamplesHarv
         end
     end
 end
-toc; disp('Done!')
+toc; 
+disp('Done!')
 
 % EOF

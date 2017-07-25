@@ -2,7 +2,7 @@
 %training set for the alpha-version neural network.
 %
 % The training data set will be saved as a structure with fields inputs and
-% targets, into the file extractTraningSetForONeField_results.mat under
+% targets, into the file extractTraningSetForOneField_results.mat under
 % current folder.
 %
 % Yaguang Zhang, Purdue, 11/28/2016
@@ -24,7 +24,8 @@ if ~(exist('inputs', 'var') && exist('targets', 'var') && exist('metaData', 'var
     end
     
     % Parameters used.
-    gpsTimeRange = [files(77).gpsTime(1), files(41).gpsTime(end)];
+    % gpsTimeRange = [files(77).gpsTime(1), files(41).gpsTime(end)]; % 2015
+    gpsTimeRange = [files(1).gpsTime(1), files(1).gpsTime(end)]; % 2015_manuallyLabeled
     
     % Extract the data set.
     [ inputs, targets, metaData ] = ...
@@ -33,7 +34,7 @@ if ~(exist('inputs', 'var') && exist('targets', 'var') && exist('metaData', 'var
         fileIndicesSortedByEndRecordingGpsTime, statesRef, gpsTimeRange);
     
     % Save the results
-    FILENAME = 'extractTraningSetForONeField_results.mat';
+    FILENAME = 'extractTraningSetForOneField_results.mat';
     save(FILENAME, 'inputs', 'targets', 'metaData');
 end
 

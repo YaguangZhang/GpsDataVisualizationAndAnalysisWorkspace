@@ -59,8 +59,9 @@ function [files, ...
 
 % Scan all existing log files in the file folder as well its
 % subdirectories. Group them into combines, tracks and grain
-% karts.
-logFileList = rdir(fullfile(fileFolderSet,'**','gps*.txt'));
+% karts. 
+%    Update 2017/07/21: Ignore files with no title line (~179 bytes). 
+logFileList = rdir(fullfile(fileFolderSet,'**','gps*.txt'), 'bytes>170');
 totalNumFiles = length(logFileList);
 
 files =struct('type', {}, 'id', {}, ...
@@ -96,7 +97,7 @@ for fileIndx = 1:1:totalNumFiles
         = loadGpsLogFileData(filename);
     
     % Test whether we've got valid data.
-    if iscell(files(recordIndx).time)
+    if( length(files)>= recordIndx && iscell(files(recordIndx).time))
         if length(files(recordIndx).time) > MIN_SAMPLE_NUM_TO_IGNORE
             % Accept the file if its sample number is large enough.
             type = files(recordIndx).type;
@@ -120,15 +121,17 @@ for fileIndx = 1:1:totalNumFiles
             
         else
             % If this file contains too few samples, ignore it.
+            disp(['                Too few samples (', ...
+                num2str(length(files(recordIndx).time)),'<=' , ...
+                num2str(MIN_SAMPLE_NUM_TO_IGNORE), ')! File ignored.']);
             files(recordIndx) = [];
             filesIgnoredNum = filesIgnoredNum + 1;
-            disp('                Too few samples! File ignored.');
         end
     else
         % If this file doesn't contain any sample, ignore it.
         files(recordIndx) = [];
         filesIgnoredNum = filesIgnoredNum + 1;
-        disp('                Too few samples! File ignored.');
+        disp(['                Too few samples (no valid sample at all)! File ignored.']);
     end
 end
 

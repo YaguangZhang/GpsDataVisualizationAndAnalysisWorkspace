@@ -9,6 +9,8 @@
 % labeled results as targets, e.g. statesRef) for the data set of interest
 % before running this performance evaluation script.
 %
+% Note: tested using Matlab R2015a.
+%
 % Yaguang Zhang, Purdue, 12/06/2016
 
 %% Predefined Parameters
@@ -18,10 +20,12 @@ cd(fileparts(mfilename('fullpath')));
 cd(fullfile('..', '..'));
 % Set path.
 setMatlabPath;
-addpath(fullfile(which(mfilename),'..','Scripts'));
+addpath(fullfile(fileparts(which(mfilename)),'Scripts'));
 
 % The data set of insterest.
-fileFolderSet = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+
+% fileFolderSet = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+fileFolderSet = fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
 
 % filesLoadedHistory.mat
 FULLPATH_FILEFOLDER_FOR_FILES_LOADED_HISTORY = fullfile(fileFolderSet, ...

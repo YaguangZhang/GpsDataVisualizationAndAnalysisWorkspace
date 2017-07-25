@@ -9,21 +9,27 @@
 
 % Please refer to mapViewController for more infomation.
 %   2015: fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+%   2015 labeled: fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
 %   2016: fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests');
 %   2016 mannually synchronized (tablet U06 isn't set to auto sync with the
 % Internet time): 
 %         fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests_synchronized');
 %   2016 GPS samples rate test (after fixing the Android logging cur_time 
 %   instead of location.time bug): 
-%         C:\Users\Zyglabs\Google Drive\2014_Harvest\GpsDataVisualizationAndAnalysis\CKT_GpsSampleRateTest_2016_08_20
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_GpsSampleRateTest_2016_08_20
 %   2017 auto GPS logging test 1 (JVK trip to Chicago): 
-%         C:\Users\Zyglabs\Google Drive\2014_Harvest\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\1_TripToChicago
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\1_TripToChicago
 %   2017 auto GPS logging test 2 (JVK trip further away): 
-%         C:\Users\Zyglabs\Google Drive\2014_Harvest\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\2_TripFurtherAway
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\2_TripFurtherAway
 %   2017 auto GPS logging test 3 (JVK trip near campus): 
-%         C:\Users\Zyglabs\Google Drive\2014_Harvest\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\3_TripAroundCampus
-fileFolder = fullfile('C:\Users\Zyglabs\Google Drive\2014_Harvest\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\3_TripAroundCampus');
-IS_RELATIVE_PATH = false;
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\3_TripAroundCampus
+%   2017 auto GPS logging more tests (Before 2017 harvest): 
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\4_MoreTestsBefore2017Harvest
+%   2017 harvest:
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_2017
+%         fullfile('..', '..', '..',  'Harvest_Ballet_2017');
+fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2017');
+IS_RELATIVE_PATH = true;
 %fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
 %IS_RELATIVE_PATH = true;
 MIN_SAMPLE_NUM_TO_IGNORE = 20;
@@ -45,7 +51,7 @@ SQUARE_SIDE_LENGTH = 200;
 
 % Force redo infield classificaiton/state recognition.
 FORCE_REDO_INFIELD_CLASSIFICATION = false;
-FORCE_REDO_STATE_RECOGNITION = false;
+FORCE_REDO_STATE_RECOGNITION = true;
 
 %% Set Matlab Path.
 
@@ -80,7 +86,7 @@ if exist('files', 'var') && USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE
         locations ... Also keep locations in case we want to reuse it too.
         GPS_TIME_RANGE PLAYBACK_SPEED AXIS_VISIBLE FLAG_SHOW_VEH_ACTIVITIES ... % For genMovieByGpsTime.m
         axisVisibleMovies timeRangeMovies indicesMovieToVeh IND_FILE_FOR_GEN_MOVIE ASK_FOR_HELP SHOW_VELOCITY_DIRECTIONS pathFolderToSaveMovies ... % For testAutoGenMovies.m
-        statesRef; 
+        statesRef enhancedFieldShapes; 
     
 else
     disp('-------------------------------------------------------------');
@@ -95,7 +101,7 @@ else
         FORCE_REDO_INFIELD_CLASSIFICATION FORCE_REDO_STATE_RECOGNITION ...
         GPS_TIME_RANGE PLAYBACK_SPEED AXIS_VISIBLE FLAG_SHOW_VEH_ACTIVITIES ... % For genMovieByGpsTime.m
         axisVisibleMovies timeRangeMovies indicesMovieToVeh IND_FILE_FOR_GEN_MOVIE ASK_FOR_HELP SHOW_VELOCITY_DIRECTIONS pathFolderToSaveMovies ... % For testAutoGenMovies.m
-        statesRef; 
+        statesRef enhancedFieldShapes; 
     loadGpsData;
     toc;
     disp('Pre-processing: Done!');
@@ -201,6 +207,20 @@ else
 end
 disp('naiveTrain: Done!');
 
+%% Better Field Shapes
+
+extractFieldShapes;
+
+%% Discard Incomplete GPS Samples
+
+for idxFile = 1:length(files)
+    % Make sure all fields of each file are of the same length.
+    numSamplesExpected = length(files(idxFile).accuracy);
+    if(length(files(idxFile).gpsTime) ~= numSamplesExpected)
+        files(idxFile) = subFile(files(idxFile),1,numSamplesExpected);
+    end
+end
+
 %% Searching for the Nearest Vehicle for Each Sample
 %
 % Also save the results in a .mat file.
@@ -215,7 +235,7 @@ pathNearestVehFile = fullfile(...
     pathNearestVehFilefolder, ...
     strcat('NearestVehicles.mat')...
     );
-
+    
 % Try loading corresponding history record first.
 if exist(pathNearestVehFile,'file')
     disp(' ');
@@ -241,6 +261,59 @@ else
     disp('Pre-processing: Saving nearestVehicles...');
     tic;
     save(pathNearestVehFile, 'nearestVehicles');
+    toc;
+    disp('Pre-processing: Done!');
+    
+end
+
+%% Compute the Headings
+%
+% Also save the results in a .mat file.
+
+disp('-------------------------------------------------------------');
+disp('Pre-processing: Computing headins for all vehicles...');
+
+% The folder where the sample density results are saved.
+pathHeadingsFilefolder = fullfile(fileFolderSet, ...
+    '_AUTOGEN_IMPORTANT', 'naiveTrain');
+pathHeadingsFile = fullfile(...
+    pathHeadingsFilefolder, ...
+    strcat('Headings.mat')...
+    );
+    
+% Try loading corresponding history record first.
+if exist(pathHeadingsFile,'file')
+    disp(' ');
+    disp('Pre-processing: Loading history results...');
+    tic;
+    load(pathHeadingsFile);
+    toc;
+    disp('Pre-processing: Done!');
+else
+    tic;
+    % Create the directory if necessary.
+    if ~exist(pathHeadingsFilefolder,'dir')
+        mkdir(pathHeadingsFilefolder);
+    end
+    
+    % Precompute the vehicle headings.
+    disp('    Precomputing vehicle headings...')
+    [vehsHeading, isForwarding, x, y, utmZones] = deal(cell(length(files),1));
+    for idxFile = 1:length(files)
+        disp(['        File: ', num2str(idxFile), '/', num2str(length(files))]);
+        [ vehsHeading{idxFile}, isForwarding{idxFile}, x{idxFile}, y{idxFile}, ...
+            utmZones{idxFile}] = estimateVehicleHeading(files(idxFile), false);
+    end
+    
+    toc;
+    disp('Pre-processing: Done!');
+    
+    % Save the results in a history .mat file.
+    disp(' ');
+    disp('Pre-processing: Saving the results...');
+    tic;
+    save(pathHeadingsFile, 'vehsHeading', 'isForwarding', ...
+        'x', 'y', 'utmZones');
     toc;
     disp('Pre-processing: Done!');
     

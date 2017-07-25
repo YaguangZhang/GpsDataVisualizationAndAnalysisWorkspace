@@ -1,4 +1,5 @@
-function [indexNearestVehFile, minDist, gpsTimeDiff, hDebugFig] = ...
+function [indexNearestVehFile, minDist, gpsTimeDiff, ...
+    indexNearestVehSample, hDebugFig] = ...
     findNearestVehicleBySample(vehFiles, indexCurrentVehFile, ...
     indexCurrentSample, maxTimeDiffAllowed, ...
     FLAG_REUSE_GPS_TIME_RANGES, FLAG_DEBUG, hDebugFig)
@@ -46,6 +47,9 @@ function [indexNearestVehFile, minDist, gpsTimeDiff, hDebugFig] = ...
 %
 %   - gpsTimeDiff
 %     The GPS time difference.
+%
+%   - indexNearestVehSample
+%     The sample index for the nearest vehicle. 
 %
 % Yaguang Zhang, Purdue, 09/14/2015
 
@@ -144,8 +148,9 @@ if ~isempty(indicesVehFileWithValidSample)
                 && strcmp(vehFiles(idxVehFileWithValidSample).id, currentVehId))
             % Only compute the distance if it's a sample from a different
             % vehicle.
-            latLonDest = [vehFiles(idxVehFileWithValidSample).lat(indicesCurrentSamples(idxVehFileWithValidSample)), ...
-                vehFiles(idxVehFileWithValidSample).lon(indicesCurrentSamples(idxVehFileWithValidSample))];
+            indexNearestVehSample = indicesCurrentSamples(idxVehFileWithValidSample);
+            latLonDest = [vehFiles(idxVehFileWithValidSample).lat(indexNearestVehSample), ...
+                vehFiles(idxVehFileWithValidSample).lon(indexNearestVehSample)];
             dists(idxVehFileWithValidSample) = ...
                 lldistkm(currentLatLon, latLonDest)*1000;
         end
@@ -155,11 +160,13 @@ end
 if any(~isinf(dists))
     % Find the nearest vehicle.
     [minDist, indexNearestVehFile] = min(dists);
+    indexNearestVehSample = indicesCurrentSamples(indexNearestVehFile);
     gpsTimeDiff = gpsTimeDiffCurrentSamples(indexNearestVehFile);
 else
     minDist = nan;
     indexNearestVehFile = nan;
     gpsTimeDiff = nan;
+    indexNearestVehSample = nan;
 end
 
 try
