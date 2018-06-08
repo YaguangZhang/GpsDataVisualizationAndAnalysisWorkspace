@@ -72,7 +72,9 @@ GPS_SAMPLE_PERIOD = 1;
 
 % Generate and save field shape (for both the lat & lon and the UTM
 % version) plots.
-FLAG_GEN_AND_SAVE_FIELD_SHAPES = true;
+if ~exist('FLAG_GEN_AND_SAVE_FIELD_SHAPES', 'var')
+    FLAG_GEN_AND_SAVE_FIELD_SHAPES = true;
+end
 FIGURE_EXT = 'jpg';
 
 %% Compute alpha.
@@ -85,7 +87,9 @@ alpha = 11.38; % ALPHA_RELAX_RATIO* sqrt((d_Max/2)^2 + HEADER_WIDTH^2) / ( 2*cos
 
 % The minimum diameter of a valid field at the end.
 MIN_FIELD_DIAMETER = 100; % In meters. Ref: before 200 was used.
-FORCE_CREATE_NEW = true;
+% Set this to true to force the program to regenerate the field shapes even
+% if they are already available.
+FORCE_CREATE_NEW = false;
 
 if(exist('enhancedFieldShapes', 'var'))
     disp('Field shapes found in current workspace. We will reuse them for convenience.');

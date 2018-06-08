@@ -1,5 +1,5 @@
-% TRIAL5_STATISTICALHARVEST Trial 5 - Plot the statistical result for some
-% fields.
+% TRIAL5_STATISTICALHARVEST Trial 5 - Plot the statistical harvesting
+% result for some fields.
 %
 % Yaguang Zhang, Purdue, 05/19/2017
 
@@ -20,7 +20,7 @@ idxField = 29; %1;
 
 fieldShape = enhancedFieldShapes{idxField};
 % ----------------------------
-% Production version.
+%  Production version.
 % ----------------------------
 [ harvestedPts, fieldShapeUtm ] = statisticalHarvestTruc( ...
     files(indicesFilesToUse), ...
@@ -30,17 +30,18 @@ fieldShape = enhancedFieldShapes{idxField};
 % For debugging: Run and Time to improve code performance.
 % 
 % This won't work. Just run the other version using "Run and Time" and
-% press ctrl+c after a while. ---------------------------- trucFiles =
-% files; trucStates = statesRef; maxNumSamplesPerFile = 2000; for idxFile =
-% indicesFilesToUse
+% press ctrl+c after a while. 
+%  ---------------------------- 
+% trucFiles = files; trucStates = statesRef; maxNumSamplesPerFile = 2000; 
+%  for idxFile = indicesFilesToUse
 %     idxEnd = min(length(files(idxFile).gpsTime), maxNumSamplesPerFile);
-%     trucFiles(idxFile) = subFile(files(idxFile), ...
+%      trucFiles(idxFile) = subFile(files(idxFile), ...
 %         1, idxEnd);
 %     trucStates{idxFile} = trucStates{idxFile}(1:idxEnd,:);
 % end
-% [ harvestedPts ] = statisticalHarvestTruc( trucFiles(indicesFilesToUse), ...
+%  [ harvestedPts ] = statisticalHarvestTruc( trucFiles(indicesFilesToUse), ...
 %     indicesFilesToUse, ...
-%     trucStates, fieldShape, gridWidth );
+%      trucStates, fieldShape, gridWidth );
 % ----------------------------
 
 % Save the result.

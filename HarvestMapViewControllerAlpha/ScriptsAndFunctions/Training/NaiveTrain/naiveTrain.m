@@ -8,26 +8,51 @@
 %% User Specified Parameters
 
 % Please refer to mapViewController for more infomation.
-%   2015: fullfile('..', '..', '..',  'Harvest_Ballet_2015');
-%   2015 labeled: fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
+%   2015: fullfile('..', '..', '..',  'Harvest_Ballet_2015'); 2015 labeled:
+%   fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
 %   2016: fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests');
 %   2016 mannually synchronized (tablet U06 isn't set to auto sync with the
-% Internet time): 
-%         fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests_synchronized');
-%   2016 GPS samples rate test (after fixing the Android logging cur_time 
-%   instead of location.time bug): 
+% Internet time):
+%         fullfile('..', '..', '..',  'Harvest_Ballet_2016',
+%         'harvests_synchronized');
+%   2016 GPS samples rate test (after fixing the Android logging cur_time
+%   instead of location.time bug):
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_GpsSampleRateTest_2016_08_20
-%   2017 auto GPS logging test 1 (JVK trip to Chicago): 
+%   2017 auto GPS logging test 1 (JVK trip to Chicago):
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\1_TripToChicago
-%   2017 auto GPS logging test 2 (JVK trip further away): 
+%   2017 auto GPS logging test 2 (JVK trip further away):
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\2_TripFurtherAway
-%   2017 auto GPS logging test 3 (JVK trip near campus): 
+%   2017 auto GPS logging test 3 (JVK trip near campus):
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\3_TripAroundCampus
-%   2017 auto GPS logging more tests (Before 2017 harvest): 
+%   2017 auto GPS logging more tests (Before 2017 harvest):
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\4_MoreTestsBefore2017Harvest
 %   2017 harvest:
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_2017
-%         fullfile('..', '..', '..',  'Harvest_Ballet_2017');
+%        or fullfile('..', '..', '..',  'Harvest_Ballet_2017');
+%   2017 harvest for only CKT (combines, gran carts and trucks):
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_2017_CktOnly
+%        or fullfile('..', '..', '..',  'Harvest_Ballet_2017_CktOnly');
+%
+%   2017 data from Amelia:
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Amelia_2017\Valid
+%        or fullfile('..', '..', '..',  'Amelia_2017','Valid');
+%
+%   2017 drilling (temperary):
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_Drilling_2017\20171108
+%        or fullfile('..', '..', '..',  'Harvest_Ballet_Drilling_2017',
+%        '20171108');
+%   2017 drilling (full data set):
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_Drilling_2017\20171204
+%        or fullfile('..', '..', '..',  'Harvest_Ballet_Drilling_2017',
+%        '20171204');
+%
+% Update 01/22/2018: Data moved to OneDrive.
+%
+%   2018 data from Amelia:
+%         C:\Users\Zyglabs\OneDrive -
+%         purdue.edu\GpsDataVisualizationAndAnalysis\Amelia_2018_01\Valid
+%        or fullfile('..', '..', '..',  'Amelia_2018_01','Valid');
+%
 fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2017');
 IS_RELATIVE_PATH = true;
 %fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
@@ -51,7 +76,7 @@ SQUARE_SIDE_LENGTH = 200;
 
 % Force redo infield classificaiton/state recognition.
 FORCE_REDO_INFIELD_CLASSIFICATION = false;
-FORCE_REDO_STATE_RECOGNITION = true;
+FORCE_REDO_STATE_RECOGNITION = false;
 
 %% Set Matlab Path.
 
@@ -86,7 +111,8 @@ if exist('files', 'var') && USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE
         locations ... Also keep locations in case we want to reuse it too.
         GPS_TIME_RANGE PLAYBACK_SPEED AXIS_VISIBLE FLAG_SHOW_VEH_ACTIVITIES ... % For genMovieByGpsTime.m
         axisVisibleMovies timeRangeMovies indicesMovieToVeh IND_FILE_FOR_GEN_MOVIE ASK_FOR_HELP SHOW_VELOCITY_DIRECTIONS pathFolderToSaveMovies ... % For testAutoGenMovies.m
-        statesRef enhancedFieldShapes; 
+        statesRef enhancedFieldShapes ...
+        enhancedFieldShapesUtm enhancedFieldShapesUtmZones;
     
 else
     disp('-------------------------------------------------------------');
@@ -101,7 +127,8 @@ else
         FORCE_REDO_INFIELD_CLASSIFICATION FORCE_REDO_STATE_RECOGNITION ...
         GPS_TIME_RANGE PLAYBACK_SPEED AXIS_VISIBLE FLAG_SHOW_VEH_ACTIVITIES ... % For genMovieByGpsTime.m
         axisVisibleMovies timeRangeMovies indicesMovieToVeh IND_FILE_FOR_GEN_MOVIE ASK_FOR_HELP SHOW_VELOCITY_DIRECTIONS pathFolderToSaveMovies ... % For testAutoGenMovies.m
-        statesRef enhancedFieldShapes; 
+        statesRef enhancedFieldShapes ...
+        enhancedFieldShapesUtm enhancedFieldShapesUtmZones;
     loadGpsData;
     toc;
     disp('Pre-processing: Done!');
@@ -209,17 +236,18 @@ disp('naiveTrain: Done!');
 
 %% Better Field Shapes
 
+disp('-------------------------------------------------------------');
+disp('naiveTrain: Extract better field shapes...');
+disp(' ');
+
+% For naiveTrain, we do not have to generate and save plots for the field
+% shapes. One can easily run extractFieldShapes independently to get those
+% results if necessary.
+FLAG_GEN_AND_SAVE_FIELD_SHAPES = true;
 extractFieldShapes;
 
-%% Discard Incomplete GPS Samples
-
-for idxFile = 1:length(files)
-    % Make sure all fields of each file are of the same length.
-    numSamplesExpected = length(files(idxFile).accuracy);
-    if(length(files(idxFile).gpsTime) ~= numSamplesExpected)
-        files(idxFile) = subFile(files(idxFile),1,numSamplesExpected);
-    end
-end
+disp(' ');
+disp('naiveTrain: Done!');
 
 %% Searching for the Nearest Vehicle for Each Sample
 %
@@ -235,7 +263,7 @@ pathNearestVehFile = fullfile(...
     pathNearestVehFilefolder, ...
     strcat('NearestVehicles.mat')...
     );
-    
+
 % Try loading corresponding history record first.
 if exist(pathNearestVehFile,'file')
     disp(' ');
@@ -280,7 +308,7 @@ pathHeadingsFile = fullfile(...
     pathHeadingsFilefolder, ...
     strcat('Headings.mat')...
     );
-    
+
 % Try loading corresponding history record first.
 if exist(pathHeadingsFile,'file')
     disp(' ');
@@ -347,8 +375,8 @@ else
     tic;
     
     % Create the directory if necessary.
-    if ~exist(pathNearestVehFilefolder,'dir')
-        mkdir(pathNearestVehFilefolder);
+    if ~exist(pathStatesByDistFilefolder,'dir')
+        mkdir(pathStatesByDistFilefolder);
     end
     
     % Label statesByDist for all vehicles.
@@ -362,6 +390,234 @@ else
     disp('naiveTrain: Saving statesByDist...');
     tic;
     save(pathStatesByDistFile, 'statesByDist');
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Product Back Traceability
+
+disp('-------------------------------------------------------------');
+disp('naiveTrain: Generating harvesting events for vehicles...');
+
+% The folder where the results are saved.
+pathProductTraceabilityFilefolder = fullfile(fileFolderSet, ...
+    '_AUTOGEN_IMPORTANT');
+pathVehicleEventsFile = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    strcat('vehicleEvents','.mat')...
+    );
+
+% Try loading corresponding history record first.
+if exist(pathVehicleEventsFile,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp('naiveTrain: Loading history results from vehicleEvents.m...');
+    tic;
+    load(pathVehicleEventsFile);
+    toc;
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating vehicleEvents...');
+    tic;
+    
+    % Create the directory if necessary.
+    if ~exist(pathProductTraceabilityFilefolder,'dir')
+        mkdir(pathProductTraceabilityFilefolder);
+    end
+    
+    % Extract events from statesByDist.
+    vehicleEvents = convertStatesToVehEvents(files, statesByDist);
+    
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Save vehicleEvents in a history .mat file.
+    disp(' ');
+    disp('naiveTrain: Saving vehicleEvents...');
+    tic;
+    save(pathVehicleEventsFile, 'vehicleEvents');
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Traceability Tree
+
+disp('-------------------------------------------------------------');
+disp('naiveTrain: Generating traceability tree for the harvesting events...');
+
+% The files where the results are saved.
+pathTraceabilityTreeFile = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    strcat('traceabilityTree','.mat')...
+    );
+pathTraceabilityTreeOverview = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    'traceabilityTreeOverview'...
+    );
+% Try loading corresponding history record first.
+if exist(pathTraceabilityTreeFile,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp('naiveTrain: Loading history results from traceabilityTree.m...');
+    tic;
+    load(pathTraceabilityTreeFile);
+    toc;
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating traceabilityTree...');
+    tic;
+    
+    % Convert the events to a traceability tree.
+    traceabilityTree = convertVehEventsToTraceTree(files, vehicleEvents);
+    
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Save traceabilityTree in a history .mat file.
+    disp(' ');
+    disp('naiveTrain: Saving traceabilityTree...');
+    tic;
+    save(pathTraceabilityTreeFile, 'traceabilityTree');
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Plot an overview of the tree.
+    disp(' ');
+    disp('naiveTrain: Plotting overviews for the traceabilityTree...');
+    tic;
+    
+    SPACE_NODE_BY_PRODUCT_AMOUNT = false;
+    hTreeOverview = plotTraceTreeOverview(traceabilityTree, files, ...
+        SPACE_NODE_BY_PRODUCT_AMOUNT);
+    saveas(hTreeOverview, [pathTraceabilityTreeOverview, '_SpacedByChildrenNum.fig']);
+    
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Traceability Tree via Estimated Product Amount
+
+% The files where the results are saved.
+pathTraceTreeEstiProdAmouFile = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    strcat('traceabilityTreeEstiProductAmount','.mat')...
+    );
+
+% Try loading corresponding history record first.
+if exist(pathTraceTreeEstiProdAmouFile,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp('naiveTrain: Loading history results from traceabilityTreeEstiProductAmount.m...');
+    tic;
+    load(pathTraceTreeEstiProdAmouFile);
+    toc;
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating estimatedProductAmountForTraceTreeNodes...');
+    tic;
+    
+    % Estimate the product amount for each node.
+    estimatedProductAmountForTraceTreeNodes ...
+        = estiAllProductAmountForTraceTree(traceabilityTree, files);
+    
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Save traceabilityTree in a history .mat file.
+    disp(' ');
+    disp('naiveTrain: Saving estimatedProductAmountForTraceTreeNodes...');
+    tic;
+    save(pathTraceTreeEstiProdAmouFile, ...
+        'estimatedProductAmountForTraceTreeNodes');
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Plot a new overview of the tree.
+    disp(' ');
+    disp('naiveTrain: Plotting overviews for the traceabilityTree...');
+    tic;
+    
+    SPACE_NODE_BY_PRODUCT_AMOUNT = true;
+    [hTreeOverviewPro, nodeCoors] ...
+        = plotTraceTreeOverview(traceabilityTree, files, ...
+        SPACE_NODE_BY_PRODUCT_AMOUNT);
+    saveas(hTreeOverviewPro, [pathTraceabilityTreeOverview, '_SpacedByEstiProductAmount.fig']);
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Interative Traceability Tree
+
+% The files where the results are saved.
+pathGpsSegsForAllNodes = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    strcat('traceabilityTreeGpsSegs','.mat')...
+    );
+
+% Load the polygons representing the elevator areas.
+pathToSaveElevatorLocPoly = fullfile(fileparts(mfilename('fullpath')), ...
+    '..', 'ProductBackTraceabilityEvaluationScriptVersion', ...
+    'Trials', 'elevatorLocPoly.mat');
+assert(exist(pathToSaveElevatorLocPoly, 'file') == 2, ...
+    'Please run Trial0_ManuallyLocateElevators.m first to generate the polygons for the grain elevators!')
+% Get elevatorLocPoly.
+load(pathToSaveElevatorLocPoly);
+
+% Try loading corresponding history record first.
+if exist(pathGpsSegsForAllNodes,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp('naiveTrain: Loading history results from traceabilityTreeGpsSegs.m...');
+    tic;
+    load(pathGpsSegsForAllNodes);
+    toc;
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating unloadingGpsSegsForAllNodes...');
+    tic;
+    
+    % Also fetch all the GPS segments required for the interactive
+    % traceability tree.
+    unloadingGpsSegsForAllNodes = fetchGpsTrackSegsForNodes(traceabilityTree, ...
+        files, 1:length(traceabilityTree));
+    
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Save traceabilityTree in a history .mat file.
+    disp(' ');
+    disp('naiveTrain: Saving unloadingGpsSegsForAllNodes...');
+    tic;
+    save(pathGpsSegsForAllNodes, ...
+        'unloadingGpsSegsForAllNodes');
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Is the tree already drawn?
+    disp(' ');
+    disp('naiveTrain: Plotting overviews for the traceabilityTree...');
+    tic;
+    
+    if ~(exist('hTreeOverviewPro', 'var') && isvalid(hTreeOverviewPro))
+        SPACE_NODE_BY_PRODUCT_AMOUNT = true;
+        [hTreeOverviewPro, nodeCoors] ...
+            = plotTraceTreeOverview(traceabilityTree, files, ...
+            SPACE_NODE_BY_PRODUCT_AMOUNT);
+    end
+    
+    % Make the figure interactive.
+    evalin('base', 'clear interactiveTraceTreeOverviewCallbackMeta');    
+    hTreeOverviewProAxes = findall(hTreeOverviewPro, 'type', 'axes');
+    set(hTreeOverviewProAxes,'ButtonDownFcn', @(src,evnt) ...
+        interactiveTraceTreeOverviewCallback(src, evnt, ...
+        nodeCoors, traceabilityTree, files, elevatorLocPoly),...
+        'HitTest','on');
+    
+    saveas(hTreeOverviewPro, [pathTraceabilityTreeOverview, '_Interactive.fig']);
     toc;
     disp('naiveTrain: Done!');
 end

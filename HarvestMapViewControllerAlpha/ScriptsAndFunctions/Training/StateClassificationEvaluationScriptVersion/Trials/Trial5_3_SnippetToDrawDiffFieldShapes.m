@@ -29,7 +29,7 @@ harvShape = plot(harvField, ...
     'FaceColor', 'blue','FaceAlpha',0.5, 'EdgeAlpha', 0);
 daspect auto; plot_google_map('MapType', 'satellite');
 hold off;
-%% Then zoom in to are of interest, adjust the figure window size, and add
+%% Then zoom in to area of interest, adjust the figure window size, and add
 % the legend.
 legend('Ha','Ex'); % legend({'Ha','Ex'}, 'FontSize', 14, 'Location', 'southeast');
 

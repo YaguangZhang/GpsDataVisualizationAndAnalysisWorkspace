@@ -13,7 +13,7 @@ FLAG_USE_NAIVETRAIN_RESULTS = true;
 
 % The location of the data set. Please refer to mapViewController for more
 % infomation.
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled'); %fullfile('..', '..', '..',  'Harvest_Ballet_2015');
 IS_RELATIVE_PATH = true;
 MIN_SAMPLE_NUM_TO_IGNORE = 20;
 

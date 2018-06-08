@@ -1,5 +1,5 @@
 % TRIAL5_1_STATISTICALHARVESTFORBOUNDARY Trial 5.1 - Plot the statistical
-% result for some fields with only the boundary harvested.
+% harvesting result for some fields with only the boundary harvested.
 %
 % Yaguang Zhang, Purdue, 05/23/2017
 
@@ -36,7 +36,8 @@ fieldShapeUtm.Alpha = optimalAlphaUtm;
 boudnaryFieldShape = extractBoundaryFieldShape(fieldShape);
 % Find relavant GPS tracks in the data set.
 indicesFilesToUse = findRelatedFiles(files, fieldShape);
-% ---------------------------- Production version.
+% ---------------------------- 
+%  Production version.
 % ----------------------------
 [ harvestedPts, boudnaryFieldShapeUtm ] = statisticalHarvestTruc( ...
     files(indicesFilesToUse), ...

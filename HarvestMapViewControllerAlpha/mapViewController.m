@@ -193,7 +193,7 @@ setMatlabPath;
 %
 % Use function fullfile to make sure this will work regardless of which
 % operation system is used.
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2017');
 IS_RELATIVE_PATH = true;
 IS_JVK_HARVEST_BALLET_DATASET = true;
 

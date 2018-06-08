@@ -35,7 +35,6 @@ addpath(fullfile(pwd, 'Training', 'StateClassificationEvaluationScriptVersion'))
 addpath(fullfile(pwd, 'Training', 'FieldShapeExtractionEvaluationScriptVersion'));
 % For neural networks.
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'StateByNeuralNet', 'Scripts'));
-addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'StateByNeuralNet', 'tests', 'MatlabGeneratedNNs'));
 % For field shape generateion.
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'FieldShapeExtraction'));
 % For vehicle heading estimator.
@@ -44,6 +43,8 @@ addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'VehicleHeadingEstimator'));
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'StatisticalHarvesting'));
 % For corner detection.
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'CornerDetector'));
+% For product traceability.
+addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'ProductTraceability'));
 
 % ScriptsAndFunctions/DataProcessing
 addpath(fullfile(pwd, 'DataProcessing'));

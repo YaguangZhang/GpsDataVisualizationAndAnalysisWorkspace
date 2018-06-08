@@ -7,7 +7,20 @@
 %% User specified parameters
 
 % Please refer to mapViewController for more infomation.
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+if ~exist('FLAG_DIFF_FILE_FOLDER', 'var')
+    FLAG_LOAD_DATA_COLLECTED_IN_YEAR_2014 = true;
+else
+    if FLAG_DIFF_FILE_FOLDER
+        assert(exist('fileFolder', 'var')~=0, 'fileFolder should already be defined if FLAG_DIFF_FILE_FOLDER presents.')
+        FLAG_LOAD_DATA_COLLECTED_IN_YEAR_2014 = false;
+    else
+        FLAG_LOAD_DATA_COLLECTED_IN_YEAR_2014 = true;
+    end
+end
+
+if FLAG_LOAD_DATA_COLLECTED_IN_YEAR_2014
+    fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+end
 IS_RELATIVE_PATH = true;
 MIN_SAMPLE_NUM_TO_IGNORE = 20;
 
@@ -43,7 +56,7 @@ if exist('files', 'var') && USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE
 else
     clearvars -except fileFolder IS_RELATIVE_PATH ...
         MIN_SAMPLE_NUM_TO_IGNORE ...
-        USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE; 
+        USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE;
     loadGpsData;
 end
 

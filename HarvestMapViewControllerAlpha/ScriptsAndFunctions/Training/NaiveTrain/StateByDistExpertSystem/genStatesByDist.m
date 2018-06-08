@@ -32,8 +32,9 @@ DISTANCE_NEARBY_VEHICLES_PADDING = 1; % In meters.
 MIN_TIME_BEING_NEARBY_TO_TAKE_ACTIONS = 30; % In seconds.
 % For segment to be classified as unloading, the majority should be
 % unloading to the left hand side.
-MIN_RATIO_UNLOAD_TO_LEFT = 0.5;
-
+%  MIN_RATIO_UNLOAD_TO_LEFT = 0.5;
+MIN_RATIO_UNLOAD_TO_LEFT = 0;
+ 
 % Initialize statesByDist.
 statesByDist = cell(length(files),1);
 for idxFile = 1:length(files)

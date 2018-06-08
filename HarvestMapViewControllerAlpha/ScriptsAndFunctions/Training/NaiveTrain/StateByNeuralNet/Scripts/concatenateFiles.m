@@ -12,6 +12,8 @@ function [ file, statesRef ] = ...
 %
 % Yaguang Zhang, Purdue, 11/28/2016
 
+statesRef = [];
+
 if (strcmp(file1.type, file2.type) && strcmp(file1.id, file2.id))
     % Order the files in terms of gpsTime.
     if(file1.gpsTime(1) > file2.gpsTime(1))

@@ -17,7 +17,7 @@ if ~(exist('inputs', 'var') && exist('targets', 'var') && exist('metaData', 'var
     if ~(exist('files', 'var') && exist('statesRef', 'var'))
         % Load files and statesRef via collectorForStates.m.
         cd(fullfile((which(mfilename)),'..', '..', '..', '..'));
-        cd('StateClassificationEvalucationScriptVersion');
+        cd('StateClassificationEvaluationScriptVersion');
         collectorForStates;
         
         cd(fullfile('Training','NaiveTrain','StateByNeuralNet','tests'));

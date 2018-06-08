@@ -49,7 +49,7 @@ function [indexNearestVehFile, minDist, gpsTimeDiff, ...
 %     The GPS time difference.
 %
 %   - indexNearestVehSample
-%     The sample index for the nearest vehicle. 
+%     The sample index for the nearest vehicle.
 %
 % Yaguang Zhang, Purdue, 09/14/2015
 
@@ -170,65 +170,64 @@ else
 end
 
 try
-% Generate plots for debugging.
-if FLAG_DEBUG && ~isnan(minDist) && sum(~isinf(dists))>=3
-    figure(hDebugFig);
-    hDebugFigEle = cell(5,1);
-    
-    subplot(1,3,1);
-    hold on;
-    
-    indicesVehToPlot = find(~isinf(dists))
-    % Current vehicle location.
-    hDebugFigEle{1} = plot(vehFiles(indexCurrentVehFile).lon(indexCurrentSample), ...
-        vehFiles(indexCurrentVehFile).lat(indexCurrentSample), 'b+');
-    % Other vehicle locations.
-    if ~isempty(indicesVehToPlot)
-        for idxVehToPlot = indicesVehToPlot'
-            hDebugFigEle{2}(end+1) = ...
-                plot(vehFiles(idxVehToPlot).lon(indicesCurrentSamples(idxVehToPlot)), ...
-                vehFiles(idxVehToPlot).lat(indicesCurrentSamples(idxVehToPlot)), 'r*');
-             hDebugFigEle{2}(end+1) = ...
-                text(vehFiles(idxVehToPlot).lon(indicesCurrentSamples(idxVehToPlot)), ...
-                vehFiles(idxVehToPlot).lat(indicesCurrentSamples(idxVehToPlot)), ...
-                num2str(idxVehToPlot));
+    % Generate plots for debugging.
+    if FLAG_DEBUG && ~isnan(minDist) && sum(~isinf(dists))>=3
+        figure(hDebugFig);
+        hDebugFigEle = cell(5,1);
+        
+        subplot(1,3,1);
+        hold on;
+        
+        indicesVehToPlot = find(~isinf(dists));
+        % Current vehicle location.
+        hDebugFigEle{1} = plot(vehFiles(indexCurrentVehFile).lon(indexCurrentSample), ...
+            vehFiles(indexCurrentVehFile).lat(indexCurrentSample), 'b+');
+        % Other vehicle locations.
+        if ~isempty(indicesVehToPlot)
+            for idxVehToPlot = indicesVehToPlot'
+                hDebugFigEle{2}(end+1) = ...
+                    plot(vehFiles(idxVehToPlot).lon(indicesCurrentSamples(idxVehToPlot)), ...
+                    vehFiles(idxVehToPlot).lat(indicesCurrentSamples(idxVehToPlot)), 'r*');
+                hDebugFigEle{2}(end+1) = ...
+                    text(vehFiles(idxVehToPlot).lon(indicesCurrentSamples(idxVehToPlot)), ...
+                    vehFiles(idxVehToPlot).lat(indicesCurrentSamples(idxVehToPlot)), ...
+                    num2str(idxVehToPlot));
+            end
         end
+        % The nearest one.
+        if ~isnan(minDist)
+            hDebugFigEle{3} = plot([vehFiles(indexCurrentVehFile).lon(indexCurrentSample), ...
+                vehFiles(indexNearestVehFile).lon(indicesCurrentSamples(indexNearestVehFile))], ...
+                [vehFiles(indexCurrentVehFile).lat(indexCurrentSample), ...
+                vehFiles(indexNearestVehFile).lat(indicesCurrentSamples(indexNearestVehFile))], ...
+                'b-');
+            hDebugFigEle{3}(end+1) = text( ...
+                ( vehFiles(indexCurrentVehFile).lon(indexCurrentSample) + ...
+                vehFiles(indexNearestVehFile).lon(indicesCurrentSamples(indexNearestVehFile)) )/2, ...
+                ( vehFiles(indexCurrentVehFile).lat(indexCurrentSample) + ...
+                vehFiles(indexNearestVehFile).lat(indicesCurrentSamples(indexNearestVehFile)) )/2, ...
+                num2str(minDist));
+        end
+        grid on;
+        hold off;
+        axis equal;
+        %plot_google_map;
+        title('Map');
+        
+        subplot(1,3,2);
+        hDebugFigEle{4} = plot(dists,'r*');
+        title('dists');
+        grid on;
+        
+        subplot(1,3,3);
+        hDebugFigEle{5} = plot(gpsTimeDiffCurrentSamples,'b*');
+        title('timeDiff');
+        grid on;
+        
+        drawnow;
+        %     disp('Press any key to continue...'); pause;
+        deleteHandles(hDebugFigEle);
     end
-    % The nearest one.
-    if ~isnan(minDist)
-        hDebugFigEle{3} = plot([vehFiles(indexCurrentVehFile).lon(indexCurrentSample), ...
-            vehFiles(indexNearestVehFile).lon(indicesCurrentSamples(indexNearestVehFile))], ...
-            [vehFiles(indexCurrentVehFile).lat(indexCurrentSample), ...
-            vehFiles(indexNearestVehFile).lat(indicesCurrentSamples(indexNearestVehFile))], ...
-            'b-');
-        hDebugFigEle{3}(end+1) = text( ...
-            ( vehFiles(indexCurrentVehFile).lon(indexCurrentSample) + ...
-            vehFiles(indexNearestVehFile).lon(indicesCurrentSamples(indexNearestVehFile)) )/2, ...
-            ( vehFiles(indexCurrentVehFile).lat(indexCurrentSample) + ...
-            vehFiles(indexNearestVehFile).lat(indicesCurrentSamples(indexNearestVehFile)) )/2, ...
-            num2str(minDist));
-    end
-    grid on;
-    hold off;
-    axis equal;
-    %plot_google_map;
-    title('Map');
-    
-    subplot(1,3,2);
-    hDebugFigEle{4} = plot(dists,'r*');
-    title('dists');
-    grid on;
-    
-    subplot(1,3,3);
-    hDebugFigEle{5} = plot(gpsTimeDiffCurrentSamples,'b*');
-    title('timeDiff');
-    grid on;
-    
-    drawnow;
-%     disp('Press any key to continue...');
-%     pause;
-    deleteHandles(hDebugFigEle);
-end
 catch errorGenDebugPlot
     disp('Error while generating debug plot...');
 end
