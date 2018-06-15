@@ -26,10 +26,13 @@ function [ traceabilityTree ] ...
 %               For vehicles: an interger label of that node within its
 %               type; For root: [D]one; For elevators: [E]*, where * can be
 %               any string that is unique within the elevator nodes.
-%         - parent
-%           The id of this node's parent.
-%         - children
-%           A column cell with ids of this node's children.
+%         - parent, parentNodeIdx
+%           The id and the node index (in this traceability tree) of this
+%           node's parent, respectively.
+%         - children, childrenNodeIndices
+%           A column cell with ids and a column vector with node indices
+%           (in this traceability tree) of this node's children,
+%           respectively.
 %         - fileIdx, estiGpsTimeStartUnloading, estiGpsTimeEndUnloading
 %           The ID, estimated GPS time for starting unloading, and the
 %           estimated GPS time for stopping unloading. The variable fileIdx
@@ -61,7 +64,9 @@ allUs = fetchEventsByIndices(allEvents, find(strcmp( ...
 % The D (Done) root node.
 traceabilityTree(1).nodeId = 'Done';
 traceabilityTree(1).parent = nan;
+traceabilityTree(1).parentNodeIdx = nan;
 traceabilityTree(1).children = {};
+traceabilityTree(1).childrenNodeIndices = [];
 traceabilityTree(1).fileIdx = nan;
 traceabilityTree(1).estiGpsTimeStartUnloading = nan;
 traceabilityTree(1).estiGpsTimeEndUnloading = nan;
@@ -70,13 +75,18 @@ traceabilityTree(1).estiGpsTimeEndUnloading = nan;
 allU2Es = fetchEventsByIndices(allEvents, find(strcmp(allEvents.event, 'u2e')));
 % The E (Elevator) nodes.
 allEleIds = unique(allU2Es.idTo);
+allEleNodeIndices = nan(length(allEleIds), 1);
 for idxE = 1:length(allEleIds)
     curEleNodeId = allEleIds{idxE};
+    allEleNodeIndices(idxE) = idxE+1;
+    
     assert(strcmp(curEleNodeId(1), 'E'), 'Elevator names should start with "E"!');
     
     % Point it to the root.
     traceabilityTree(idxE+1).parent = 'Done';
+    traceabilityTree(idxE+1).parentNodeIdx = 1;
     traceabilityTree(1).children{end+1} = curEleNodeId;
+    traceabilityTree(1).childrenNodeIndices(end+1) = idxE+1;
     
     traceabilityTree(idxE+1).nodeId = curEleNodeId;
     traceabilityTree(idxE+1).children = {};
@@ -141,6 +151,16 @@ for idxVehType = 1:length(vehTypes)
                 % The truck nodes' parents are identified by the elevator
                 % name.
                 parentNodeId = allUsCurVeh.idTo{uIdx};
+                try
+                    parentNodeIdx = allEleNodeIndices(arrayfun( ...
+                        @(idx) strcmp(parentNodeId, allEleIds{idx}), ...
+                        1:length(allEleNodeIndices) ...
+                        ));
+                catch
+                    disp(['Unable to find the parent node for truck', ...
+                            newNodeId, ' using elevator name! Setting parent node idx to nan ...']);
+                    parentNodeIdx = nan;
+                end
             else
                 % For grain carts and combines, we need to find their
                 % parent according to the file index.
@@ -153,10 +173,11 @@ for idxVehType = 1:length(vehTypes)
                 assert(issorted(nodeEstiGpsTimeEndUFilteredByToFileIdx), ...
                     'The end unloaiding moments for candidate parent nodes should be sorted!')
                 try
-                    parentNodeId = traceabilityTree(nodeIndicesFilteredByToFileIdx(...
+                    parentNodeIdx = nodeIndicesFilteredByToFileIdx(...
                         find(allUsCurVeh.estiGpsTimeEnd(uIdx) ...
                         <=nodeEstiGpsTimeEndUFilteredByToFileIdx, 1)...
-                        )).nodeId;
+                        );
+                    parentNodeId = traceabilityTree(parentNodeIdx).nodeId;
                 catch
                     if DEBUG
                         disp(['Unable to find the parent node for ', ...
@@ -176,17 +197,20 @@ for idxVehType = 1:length(vehTypes)
                         'The end unloaiding moments for candidate parent nodes should be sorted!')
                     
                     try
-                        parentNodeId = traceabilityTree(nodeIndicesFilteredByToVehId(...
+                        parentNodeIdx = nodeIndicesFilteredByToVehId(...
                             find(allUsCurVeh.estiGpsTimeEnd(uIdx) ...
                             <=nodeEstiGpsTimeEndUFilteredByToVehId, 1)...
-                            )).nodeId;
+                            );
+                        parentNodeId = traceabilityTree(parentNodeIdx).nodeId;
                         if DEBUG
-                            disp(['    Found via vehId the parent node: ', parentNodeId]);
+                            disp(['    Found via vehId the parent node: ', ...
+                                parentNodeId]);
                         end
                     catch
                         warning(['Unable to find the parent node for ', ...
                             newNodeId, '! Setting its parent to be nan...']);
-                        parentNodeId = nan;
+                        parentNodeIdx = nan;
+                        parentNodeId = nan;                        
                     end
                 end
             end
@@ -194,8 +218,15 @@ for idxVehType = 1:length(vehTypes)
             endUNodeLabelsForVehs{end}{uIdx} = newNodeId;
             
             traceabilityTree(end+1).nodeId = newNodeId;
+            
+            newNodeIdx = length(traceabilityTree);
+            
             traceabilityTree(end).parent = parentNodeId;
+            traceabilityTree(end).parentNodeIdx = parentNodeIdx;           
+
             traceabilityTree(end).children = {};
+            traceabilityTree(end).childrenNodeIndices = [];
+            
             traceabilityTree(end).fileIdx = allUsCurVeh.vehFileIdx(uIdx);
             traceabilityTree(end).estiGpsTimeStartUnloading ...
                 = allUsCurVeh.estiGpsTimeStart(uIdx);
@@ -209,6 +240,7 @@ for idxVehType = 1:length(vehTypes)
                     ['Only one parent ', parentNodeId, ...
                     ' should be found in the tree!']);
                 traceabilityTree(parentNodeidx).children{end+1} = newNodeId;
+                traceabilityTree(parentNodeidx).childrenNodeIndices(end+1) = newNodeIdx;
             end
         end
     end
@@ -281,10 +313,17 @@ for idxH = 1:length(allHs.vehId)
             '-', num2str(curNodeCnt)];
         curEventH = curEventsH(idxNodeS);
         parentNodeId = curParentNodeIds{idxNodeS};
+        parentNodeIdx = find(arrayfun(@(n) ...
+            strcmp(parentNodeId, n.nodeId), traceabilityTree));
         
         traceabilityTree(end+1).nodeId = newNodeId;
+        newNodeIdx = length(traceabilityTree);
+        
         traceabilityTree(end).parent = parentNodeId;
+        traceabilityTree(end).parentNodeIdx = parentNodeIdx;
+        
         traceabilityTree(end).children = {};
+        traceabilityTree(end).childrenNodeIndices = [];
         traceabilityTree(end).fileIdx = curEventH.vehFileIdx;
         traceabilityTree(end).estiGpsTimeStartUnloading ...
             = curEventH.estiGpsTimeStart;
@@ -298,6 +337,7 @@ for idxH = 1:length(allHs.vehId)
                 ['Only one parent ', parentNodeId, ...
                 ' should be found in the tree!']);
             traceabilityTree(parentNodeidx).children{end+1} = newNodeId;
+            traceabilityTree(parentNodeidx).childrenNodeIndices(end+1) = newNodeIdx;
         end
     end
 end

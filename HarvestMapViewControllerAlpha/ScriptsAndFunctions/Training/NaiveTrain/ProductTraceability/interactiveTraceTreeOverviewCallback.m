@@ -354,22 +354,27 @@ else
 end
 
 % Second, a map with product colored by elevators.
+disp(' ');
+disp('    InterTraceTree: Another map with swaths colored by elevators ... ');
 hMapViewTraceUp = figure;
 mapViewTraceUpAxes = gca;
 hold on;
 flagMapViewTraceUpEmpty = true;
 % Plot the swaths according to their ancestor elevators.
-colorsEle = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 1 0];
+colorsEle = [0 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 1 0];
 [numColorsEle, ~] = size(colorsEle);
 if ~isempty(nodeIndicesSwaths)
+    disp('    InterTraceTree: Tracing up to elevators ... ');
+    tic;
     ancestorEleIndices = arrayfun(@(nIdx) ...
         traceUpToEle(traceTree, nIdx), nodeIndicesSwaths);
+    toc;
     
-    uniqeSncestorEleIndices = unique(ancestorEleIndices);
+    uniqAncestorEleIndices = unique(ancestorEleIndices);
     [hMapViewTraceUpSwaths, nodeIdsMapViewTraceUpEle] ...
-        = deal(cell(length(uniqeSncestorEleIndices),1));
-    for idxUniqAncEle = 1:length(uniqeSncestorEleIndices)
-        curIdxAncEle = uniqeSncestorEleIndices(idxUniqAncEle);
+        = deal(cell(length(uniqAncestorEleIndices),1));
+    for idxUniqAncEle = 1:length(uniqAncestorEleIndices)
+        curIdxAncEle = uniqAncestorEleIndices(idxUniqAncEle);
         curNodeIndicesSwaths ...
             = nodeIndicesSwaths(ancestorEleIndices==curIdxAncEle);
         curLatLonSwaths = vertcat(gpsSampsHarvested{curNodeIndicesSwaths});
@@ -378,6 +383,10 @@ if ~isempty(nodeIndicesSwaths)
             curLatLonSwaths(:,2), curLatLonSwaths(:,1), ...
             '.', 'Color', colorsEle(mod(idxUniqAncEle, numColorsEle),:));
         flagMapViewTraceUpEmpty = false;
+        
+        % Get the ID of the elevator.
+        nodeIdsMapViewTraceUpEle{idxUniqAncEle} ...
+            = traceTree(curIdxAncEle).nodeId;
     end
     
     % Plot the truck tracks if necessary.
@@ -410,6 +419,8 @@ if ~isempty(lonsElevators)
     flagMapViewTraceUpEmpty = false;
 end
 
+% TODO: Maybe add labels for the elevators.
+
 if flagMapViewTraceUpEmpty
     disp('    InterTraceTree: Nothing to show on the map (Trace up). Closing figure... ');
     close(hMapViewTraceUp);
@@ -420,7 +431,10 @@ else
     plot_google_map('Axis', hMapViewTraceUpAxes, 'MapType', 'satellite');
     % Hide lat and lon labels.
     set(hMapViewTraceUpAxes, 'XTick', [], 'YTick', []);
-    legend(hMapViewTraceUpSwaths, nodeIdsMapViewTraceUpEle);
+    % Get rid of the starting "Elevator" in the elevator IDs.
+    legend([hMapViewTraceUpSwaths{:}], ...
+        cellfun(@(id) id(10:end), nodeIdsMapViewTraceUpEle, ...
+        'UniformOutput', false));
 end
 
 % Change the background color to indicate the click worked.

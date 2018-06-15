@@ -2,6 +2,9 @@ function [ ancestorEleIdx ] = traceUpToEle(traceTree, childNodeIdx)
 %TRACEUPTOELE Trace from a node all the way up and return the ancestor
 %elevator if there is any.
 %
+% Note: this method is slow because we need to locate parent nodes by their
+% string IDs.
+%
 % Inputs:
 %   - traceTree
 %     The traceability tree structure array.
@@ -23,12 +26,14 @@ if childNodeIdx ~= 1
     topSecNodeIdx = nan;
     
     % Keep climbing up if there is still something up.
-    while ~isnan(traceTree(topNodeIdx).parent)
+    while ~isnan(traceTree(topNodeIdx).parentNodeIdx)
         topSecNodeIdx = topNodeIdx;
         
-        curParentId = traceTree(topNodeIdx).parent;
-        topNodeIdx = find(arrayfun(@(n) ...
-            strcmp(n.nodeId, curParentId), traceTree));
+        %         curParentId = traceTree(topNodeIdx).parent;
+        %
+        %         topNodeIdx = find(arrayfun(@(n) ...
+        %             strcmp(n.nodeId, curParentId), traceTree));
+        topNodeIdx = traceTree(topNodeIdx).parentNodeIdx;
     end
     
     if topNodeIdx==1

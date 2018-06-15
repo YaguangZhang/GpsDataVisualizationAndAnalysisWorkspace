@@ -1,7 +1,7 @@
 function [ hFig, nodeCoors ] = plotTraceTreeOverview( traceTree, files, ...
     SPACE_NODE_BY_PRODUCT_AMOUNT )
-%PLOTTRACETREEOVERVIEW Illustrate the traceability tree with an interactive
-%plot.
+%PLOTTRACETREEOVERVIEW Illustrate the traceability tree with a possibly
+%interactive plot.
 %
 % Set SPACE_NODE_BY_PRODUCT_AMOUNT to be true to space the nodes according
 % to how much "product" they have. Here we simply use the total number of
