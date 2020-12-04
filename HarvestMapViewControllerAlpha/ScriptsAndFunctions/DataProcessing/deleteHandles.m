@@ -13,9 +13,11 @@ if iscell(handles)
         end
     end
 else
-    if isvalid(handles)
-        % Assume the input is a handle/ a handle vector.
-        delete(handles);
+    if ~isempty(handles)
+        if isvalid(handles)
+            % Assume the input is a handle/ a handle vector.
+            delete(handles);
+        end
     end
 end
 

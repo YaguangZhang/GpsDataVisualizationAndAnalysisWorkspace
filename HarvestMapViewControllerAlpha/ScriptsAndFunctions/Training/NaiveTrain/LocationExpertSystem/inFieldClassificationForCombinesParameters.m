@@ -12,6 +12,7 @@
 % Points with higher speed than or equal to this will be classified as -100
 % (must be on the road).
 ONROAD_SPEED_BOUND = 4.5; % Default 4.5 m/s (10.1 miles per hour).
+MIN_DEV_IND_DENSITY_IN_FIELD = 10; % Default 10 for 200 side-width densities.
 
 % Points scanned by the propagation algorithm with less distance to the
 % "road line" than this will be classified as on the road.

@@ -22,19 +22,7 @@ ancestorEleIdx = nan;
 
 if childNodeIdx ~= 1
     % The top two nodes that we need to locate.
-    topNodeIdx = childNodeIdx;
-    topSecNodeIdx = nan;
-    
-    % Keep climbing up if there is still something up.
-    while ~isnan(traceTree(topNodeIdx).parentNodeIdx)
-        topSecNodeIdx = topNodeIdx;
-        
-        %         curParentId = traceTree(topNodeIdx).parent;
-        %
-        %         topNodeIdx = find(arrayfun(@(n) ...
-        %             strcmp(n.nodeId, curParentId), traceTree));
-        topNodeIdx = traceTree(topNodeIdx).parentNodeIdx;
-    end
+    [topNodeIdx, topSecNodeIdx] = traceUpToTop(traceTree, childNodeIdx);
     
     if topNodeIdx==1
         % The top node is "Done", which means the second top node is a

@@ -27,40 +27,52 @@ setMatlabPath;
 % We only need files and locations.
 
 % Relative path to the data set.
-% fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests_synchronized');
-% fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+%
+%   fileFolder = fullfile('..', '..', '..', ...
+%       'Harvest_Ballet_2016', 'harvests_synchronized');
+%
+%   fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
 if ~exist('fileFolder', 'var')
-    fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
+    fileFolder = fullfile('..', '..', '..',  ...
+        'Harvest_Ballet_2015_ManuallyLabeled');
 end
 
 try
-    pathNaiveTrainResultsFilefolder = fullfile(pwd, fileFolder, ...
-        '_AUTOGEN_IMPORTANT');
+    if ~exist('pathNaiveTrainResultsFilefolder', 'var')
+        pathNaiveTrainResultsFilefolder = fullfile(pwd, fileFolder, ...
+            '_AUTOGEN_IMPORTANT');
+    end
     
     if(exist('files', 'var'))
-        disp('GPS tracks found in current workspace. We will reuse them for convenience.');
+        disp(['GPS tracks found in current workspace.', ...
+            ' We will reuse them for convenience.']);
     else
         disp('Loading GPS tracks...')
-        load(fullfile(pathNaiveTrainResultsFilefolder, 'filesLoadedHistory.mat'));
+        load(fullfile(pathNaiveTrainResultsFilefolder, ...
+            'filesLoadedHistory.mat'));
         disp('  Done!')
     end
     if(exist('locations', 'var'))
-        disp('Location labels for the GPS tracks found in current workspace. We will reuse them for convenience.');
+        disp(['Location labels for the GPS tracks found in current ', ...
+            'workspace. We will reuse them for convenience.']);
     else
         disp('Loading location labels for the GPS tracks...')
-        load(fullfile(pathNaiveTrainResultsFilefolder, 'filesLoadedLocations.mat'));
+        load(fullfile(pathNaiveTrainResultsFilefolder, ...
+            'filesLoadedLocations.mat'));
         disp('  Done!')
     end
 catch
     disp('Full path for fileFolder:');
     disp(fullfile(pwd, fileFolder));
-    error('Unable to load the data required for the data set specified! Please make sure naiveTrain.m has been run for this dataset before.');
+    error(['Unable to load the data required for the data set ', ...
+        'specified! Please make sure naiveTrain.m has been run ', ...
+        'for this dataset before.']);
 end
 
 %% Predefined parameters.
 
-% Estimated combine header width in meters.
-HEADER_WIDTH = 9.1; % 30 feet is around 9.144 meters. Denoted by W in the document.
+% Estimated combine header width in meters (Denoted by W in the document).
+HEADER_WIDTH = 9.1; % 30 feet is around 9.144 meters.
 
 % Updated according to the ASABE paper. Harvesting speed range for
 % combines. [0.044704, 6.7056] m/s (i.e. ~[0.1, 15] MPH).
@@ -70,18 +82,26 @@ MAX_HARVEST_SPE = 4; % 6.7056;
 % GPS sample period in second.
 GPS_SAMPLE_PERIOD = 1;
 
+% Updated for extending the field shapes.
+MIN_FIELD_AREA_SQUARE_M = 5000; % Based on the 2019 dataset.
+
 % Generate and save field shape (for both the lat & lon and the UTM
 % version) plots.
 if ~exist('FLAG_GEN_AND_SAVE_FIELD_SHAPES', 'var')
     FLAG_GEN_AND_SAVE_FIELD_SHAPES = true;
 end
+FLAG_CLOSE_PLOT_AFTER_SAVING = true;
 FIGURE_EXT = 'jpg';
 
 %% Compute alpha.
 
 % Updated according to the ASABE paper.
 d_Max = MAX_HARVEST_SPE*GPS_SAMPLE_PERIOD;
-alpha = 11.38; % ALPHA_RELAX_RATIO* sqrt((d_Max/2)^2 + HEADER_WIDTH^2) / ( 2*cos(atan(d_Max/(2*HEADER_WIDTH))) );
+% We use the formula below for the optimal alpha:
+%   ALPHA_RELAX_RATIO*
+%       sqrt((d_Max/2)^2 + HEADER_WIDTH^2)
+%          / ( 2*cos(atan(d_Max/(2*HEADER_WIDTH))) ).
+optimalAlphaUtm = 11.38;
 
 %% Construct alpha shapes accordingly.
 
@@ -92,9 +112,11 @@ MIN_FIELD_DIAMETER = 100; % In meters. Ref: before 200 was used.
 FORCE_CREATE_NEW = false;
 
 if(exist('enhancedFieldShapes', 'var'))
-    disp('Field shapes found in current workspace. We will reuse them for convenience.');
+    disp(['Field shapes found in current workspace. ', ...
+        'We will reuse them for convenience.']);
 else
-    pathEnhancedFieldShapes = fullfile(pathNaiveTrainResultsFilefolder, 'enhancedFieldShapes.mat');
+    pathEnhancedFieldShapes = fullfile(pathNaiveTrainResultsFilefolder, ...
+        'enhancedFieldShapes.mat');
     if(exist(pathEnhancedFieldShapes, 'file') && ~FORCE_CREATE_NEW)
         disp('Loading field shapes (with lat & lon)...')
         load(pathEnhancedFieldShapes);
@@ -115,7 +137,8 @@ else
             fileCounter = 0;
             for idxFile = fileIndicesCombines'
                 fileCounter = fileCounter+1;
-                disp(['  File ', num2str(fileCounter), '/', num2str(length(fileIndicesCombines)), '...']);
+                disp(['  File ', num2str(fileCounter), '/', ...
+                    num2str(length(fileIndicesCombines)), '...']);
                 
                 % We assume the size for a field is normally so small that
                 % even if we treat lon & lat as x & y on a 2D plane, the
@@ -124,20 +147,27 @@ else
                 % being merged here. This way, we don't need to deal with
                 % possibly different zone's for one single GPS sample
                 % subsquence in the UTM system.
-                [indicesSta, indicesEnd] = findConsecutiveSubSeq(locations{idxFile}, 0);
+                [indicesSta, indicesEnd] ...
+                    = findConsecutiveSubSeq(locations{idxFile}, 0);
                 
                 % Get rid of the subsequences that are too short.
-                booleansInvalidSubSeq = (indicesEnd-indicesSta)<minValidSubSeqLongth;
+                booleansInvalidSubSeq ...
+                    = (indicesEnd-indicesSta)<minValidSubSeqLongth;
                 indicesSta = indicesSta(~booleansInvalidSubSeq);
                 indicesEnd = indicesEnd(~booleansInvalidSubSeq);
                 
                 % Organize those subsequences into a cell.
                 infieldSubSeqs = {};
                 for idxInfieldSubSeq = 1:length(indicesSta)
-                    indicesSamplesToExtract = indicesSta(idxInfieldSubSeq):indicesEnd(idxInfieldSubSeq);
-                    consecutiveSubSeq.lat = files(idxFile).lat(indicesSamplesToExtract);
-                    consecutiveSubSeq.lon = files(idxFile).lon(indicesSamplesToExtract);
-                    infieldSubSeqs{end+1} = consecutiveSubSeq;
+                    indicesSamplesToExtract ...
+                        = indicesSta(idxInfieldSubSeq)...
+                        :indicesEnd(idxInfieldSubSeq);
+                    consecutiveSubSeq.lat ...
+                        = files(idxFile).lat(indicesSamplesToExtract);
+                    consecutiveSubSeq.lon ...
+                        = files(idxFile).lon(indicesSamplesToExtract);
+                    infieldSubSeqs{end+1} ...
+                        = consecutiveSubSeq;
                 end
                 
                 % Populate enhancedFieldShapes while taking care of
@@ -163,13 +193,21 @@ else
                         % Merge all the fields overlapped with this
                         % subsequence, and add the data for this
                         % subsequence into the shape, too.
-                        fieldShapesToMerge = enhancedFieldShapes(booleansFieldShapeOverlapped==1);
+                        fieldShapesToMerge = enhancedFieldShapes( ...
+                            booleansFieldShapeOverlapped==1);
                         % Update enhancedFieldShapes.
-                        enhancedFieldShapes = enhancedFieldShapes(booleansFieldShapeOverlapped==0);
+                        enhancedFieldShapes = enhancedFieldShapes( ...
+                            booleansFieldShapeOverlapped==0);
                         enhancedFieldShapes{end+1} = ...
                             alphaShape(...
-                            vertcat(cell2mat(cellfun(@(x) x.Points, fieldShapesToMerge', 'UniformOutput', false)), ...
-                            [infieldSubSeqs{idxInfieldSubSeq}.lon, infieldSubSeqs{idxInfieldSubSeq}.lat]) ...
+                            vertcat(cell2mat( ...
+                            ...
+                            cellfun(@(x) x.Points, fieldShapesToMerge', ...
+                            'UniformOutput', false) ...
+                            ...
+                            ), ...
+                            [infieldSubSeqs{idxInfieldSubSeq}.lon, ...
+                            infieldSubSeqs{idxInfieldSubSeq}.lat]) ...
                             );
                     end
                 end
@@ -181,9 +219,15 @@ else
         end
         
         % Check the sizes of the resulted field shapes.
-        disp('  Removing field shapes that are too tiny...');
+        disp('  Removing field shapes that are not wide enough...');
+        disp(['      Diameter for a valid field should be at least ', ...
+            num2str(MIN_FIELD_DIAMETER), ' m.']);
         enhancedFieldShapes = enhancedFieldShapes(...
-            cellfun(@(x) fieldDiameter(x.Points(:,2),x.Points(:,1))< MIN_FIELD_DIAMETER, ...
+            cellfun(@(x) ...
+            ...
+            fieldDiameter(x.Points(:,2),x.Points(:,1))...
+            < MIN_FIELD_DIAMETER, ...
+            ...
             enhancedFieldShapes)...
             ==0);
         
@@ -202,19 +246,25 @@ enhancedFieldShapesUtmZones = cell(size(enhancedFieldShapes));
 % We will generate a new copy of the alphaShapes cell and store the results
 % there.
 if(exist('enhancedFieldShapesUtm', 'var'))
-    disp('Field shapes with UTM coordinates found in current workspace. We will reuse them for convenience.');
+    disp(['Field shapes with UTM coordinates found in current ', ...
+        'workspace. We will reuse them for convenience.']);
 else
-    pathEnhancedFieldShapesUtm = fullfile(pathNaiveTrainResultsFilefolder, 'enhancedFieldShapesUtm.mat');
-    pathEnhancedFieldShapesUtmZones = fullfile(pathNaiveTrainResultsFilefolder, 'enhancedFieldShapesUtmZones.mat');
+    pathEnhancedFieldShapesUtm = fullfile( ...
+        pathNaiveTrainResultsFilefolder, 'enhancedFieldShapesUtm.mat');
+    pathEnhancedFieldShapesUtmZones = fullfile( ...
+        pathNaiveTrainResultsFilefolder, ...
+        'enhancedFieldShapesUtmZones.mat');
     if(exist(pathEnhancedFieldShapesUtm, 'file'))
         disp('Loading field shapes (with UTM coordinates)...')
         load(pathEnhancedFieldShapesUtm);
+        load(pathEnhancedFieldShapesUtmZones);
         disp('  Done!');
     else
         disp('Converting field shapes (from lat & lon to UTM)...')
         enhancedFieldShapesUtm = enhancedFieldShapes;
         for idxEnhancedFieldShapesUtm = 1:length(enhancedFieldShapesUtm)
-            disp(['  Field shape ', num2str(idxEnhancedFieldShapesUtm), '/', num2str(length(enhancedFieldShapesUtm)), '...']);
+            disp(['  Field shape ', num2str(idxEnhancedFieldShapesUtm), ...
+                '/', num2str(length(enhancedFieldShapesUtm)), '...']);
             [easting, northing, zones] = deg2utm(...
                 enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points(:, 2), ...
                 enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points(:, 1) ...
@@ -222,26 +272,90 @@ else
             % Make sure all UTM coordinates in one field are within the
             % same zone.
             try
-                if (all(cellfun(@(x) strcmp(zones(1,:),x), num2cell(zones, 2))))
-                    enhancedFieldShapesUtmZones{idxEnhancedFieldShapesUtm} = zones(1, :);
+                if (all(cellfun(@(x) ...
+                        strcmp(zones(1,:),x), num2cell(zones, 2))))
+                    enhancedFieldShapesUtmZones{idxEnhancedFieldShapesUtm} ...
+                        = zones(1, :);
+                    enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points ...
+                        = [easting, northing];
+                    enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Alpha ...
+                        = optimalAlphaUtm;
                 else
-                    error('Not all UTM coordinates in the field are within the same zone!')
+                    warning(['Not all UTM coordinates in the field ', ...
+                        'are within the same zone!'])
+                    
+                    % Find the zone with most GPS samples of interest in
+                    % it.
+                    uniqueZones = unique(zones, 'rows');
+                    numUniqueZones = size(uniqueZones, 1);
+                    numSamplesInEachZone = zeros(numUniqueZones, 1);
+                    for idxUniqueZone = 1:size(uniqueZones, 1)
+                        curZone = uniqueZones(idxUniqueZone, :);
+                        numSamplesInEachZone(idxUniqueZone) ...
+                            = sum(ismember(zones, curZone, 'rows'));
+                    end
+                    [~, idxZoneWithMaxSamps] = max(numSamplesInEachZone);
+                    curZone = uniqueZones(idxZoneWithMaxSamps, :);
+                    
+                    % Force conversion in the UTM zone with most samples.
+                    dczone = curZone(~isspace(curZone));
+                    utmstruct = defaultm('utm');
+                    utmstruct.zone = dczone;
+                    utmstruct.geoid = wgs84Ellipsoid;
+                    utmstruct = defaultm(utmstruct);
+
+                    [easting, northing] = mfwdtran(utmstruct, ...
+                        enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points(:, 2), ...
+                        enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points(:, 1));
+                    
+                    enhancedFieldShapesUtmZones{idxEnhancedFieldShapesUtm} ...
+                        = curZone;
+                    enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points ...
+                        = [easting, northing];
+                    enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Alpha ...
+                        = optimalAlphaUtm;
                 end
                 
-                enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Points = ...
-                    [easting, northing];
-                enhancedFieldShapesUtm{idxEnhancedFieldShapesUtm}.Alpha = alpha;
             catch e
                 disp(e);
-                % rethrow(e);
+                rethrow(e);
             end
         end
+        
+        % Discard field shapes with too small areas.
+        disp('  Removing field shapes that are not large enough...');
+        disp(['      Area for a valid field should be at least ', ...
+            num2str(MIN_FIELD_AREA_SQUARE_M), ' m^2.']);
+        boolsFieldsToDiscard ...
+            = cellfun(@(efs) area(efs), enhancedFieldShapesUtm) ...
+            <MIN_FIELD_AREA_SQUARE_M;
+        
+        discardedEnhFieldShapes ...
+            = enhancedFieldShapes(boolsFieldsToDiscard);
+        discardedEnhFieldShapesUtm ...
+            = enhancedFieldShapesUtm(boolsFieldsToDiscard);
+        discardedEnhFieldShapesUtmZones ...
+            = enhancedFieldShapesUtmZones(boolsFieldsToDiscard);
+        
+        enhancedFieldShapes(boolsFieldsToDiscard) = [];
+        enhancedFieldShapesUtm(boolsFieldsToDiscard) = [];
+        enhancedFieldShapesUtmZones(boolsFieldsToDiscard) = [];
         
         disp('  Done!');
         % Also, we will save the results for future usage.
         disp('Saving field shapes (with UTM coordinates)...')
+        save(pathEnhancedFieldShapes, 'enhancedFieldShapes');
         save(pathEnhancedFieldShapesUtm, 'enhancedFieldShapesUtm');
-        save(pathEnhancedFieldShapesUtmZones, 'pathEnhancedFieldShapesUtmZones');
+        save(pathEnhancedFieldShapesUtmZones, ...
+            'enhancedFieldShapesUtmZones');
+        
+        pathDiscardedEnhFieldShapes ...
+            = fullfile(pathNaiveTrainResultsFilefolder, ...
+            'discardedEnhFieldShapes.mat');
+        save(pathDiscardedEnhFieldShapes, ...
+            'discardedEnhFieldShapes', 'discardedEnhFieldShapesUtm', ...
+            'discardedEnhFieldShapesUtmZones');
+        
         disp('  Done!');
     end
 end
@@ -249,24 +363,32 @@ end
 %% Plot and save the field shapes.
 
 if FLAG_GEN_AND_SAVE_FIELD_SHAPES
-    pathFolderToSaveFieldShapes = fullfile(pathNaiveTrainResultsFilefolder, 'AutoGenFieldShapes');
+    pathFolderToSaveFieldShapes = fullfile( ...
+        pathNaiveTrainResultsFilefolder, 'AutoGenFieldShapes');
     if(~exist(pathFolderToSaveFieldShapes, 'dir'))
         mkdir(pathFolderToSaveFieldShapes);
     end
     
     for idx = 1:length(enhancedFieldShapes)
-        fileName = fullfile(pathFolderToSaveFieldShapes, ['enhancedFieldShapes_', num2str(idx)]);
+        fileName = fullfile(pathFolderToSaveFieldShapes, ...
+            ['enhancedFieldShapes_', num2str(idx)]);
         if(~exist([fileName,'.',FIGURE_EXT], 'file'))
             hFieldShapeFig = figure;
             plot(enhancedFieldShapes{idx});
             axis normal;
             plot_google_map('MapType', 'satellite');
-            saveas(hFieldShapeFig, fileName, 'jpg');
+            saveas(hFieldShapeFig, fileName, FIGURE_EXT);
+            
+            if FLAG_CLOSE_PLOT_AFTER_SAVING
+                close(hFieldShapeFig);
+            end
         end
     end
     
     for idx = 1:length(enhancedFieldShapesUtm)
-        fileName = fullfile(pathFolderToSaveFieldShapes, ['enhancedFieldShapesUtm_', num2str(idx), '_alpha_', num2str(floor(alpha))]);
+        fileName = fullfile(pathFolderToSaveFieldShapes, ...
+            ['enhancedFieldShapesUtm_', num2str(idx), '_alpha_', ...
+            num2str(floor(optimalAlphaUtm))]);
         if(~exist([fileName,'.',FIGURE_EXT], 'file'))
             hFieldShapeFig = figure;
             % Note that we don't add any map backgroud here because the
@@ -274,8 +396,11 @@ if FLAG_GEN_AND_SAVE_FIELD_SHAPES
             plot(enhancedFieldShapesUtm{idx});
             axis equal;
             saveas(hFieldShapeFig, fileName, FIGURE_EXT);
+            
+            if FLAG_CLOSE_PLOT_AFTER_SAVING
+                close(hFieldShapeFig);
+            end
         end
     end
 end
-
 % EOF

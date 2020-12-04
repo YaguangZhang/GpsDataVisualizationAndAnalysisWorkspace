@@ -1,0 +1,2 @@
+mkdir -p "C:\Users\Zyglabs\Desktop\GpsDataVisualizationAndAnalysisWorkspace\ExternalFunctions"
+cp -p --parents `find -name \*.m` "C:\Users\Zyglabs\Desktop\GpsDataVisualizationAndAnalysisWorkspace\ExternalFunctions"

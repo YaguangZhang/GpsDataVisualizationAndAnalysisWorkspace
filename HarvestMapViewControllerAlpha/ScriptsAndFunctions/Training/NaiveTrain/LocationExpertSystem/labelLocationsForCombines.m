@@ -77,6 +77,9 @@ for indexFile = 1:1:length(files)
         % Rule 0: ONROAD_SPEED_BOUND m/s bound + gap filling. This will
         % always be used.
         location(spee>= ONROAD_SPEED_BOUND) = -100;
+        % Rule 0 (appended): locations with really low sample density are
+        % for sure on road.
+        location(dens<MIN_DEV_IND_DENSITY_IN_FIELD) = -100;
         
         diffidx3D4msNa = diff([0;location;0]);
         indices4msRoadSequenceStart = find(diffidx3D4msNa==-100); % start
@@ -330,5 +333,4 @@ for indexFile = 1:1:length(files)
         end
     end
 end
-
 % EOF

@@ -8,24 +8,27 @@
 %% User Specified Parameters
 
 % Please refer to mapViewController for more infomation.
-%   2015: fullfile('..', '..', '..',  'Harvest_Ballet_2015'); 2015 labeled:
-%   fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
-%   2016: fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests');
+%   2015:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+%   2015 labeled:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2015_ManuallyLabeled');
+%   2016:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2016', 'harvests');
 %   2016 mannually synchronized (tablet U06 isn't set to auto sync with the
 % Internet time):
 %         fullfile('..', '..', '..',  'Harvest_Ballet_2016',
 %         'harvests_synchronized');
 %   2016 GPS samples rate test (after fixing the Android logging cur_time
 %   instead of location.time bug):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_GpsSampleRateTest_2016_08_20
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2016_08_20_CKT_GpsSampleRateTest
 %   2017 auto GPS logging test 1 (JVK trip to Chicago):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\1_TripToChicago
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_03_10_CKT_AutoLoggingTest_JVK\1_TripToChicago
 %   2017 auto GPS logging test 2 (JVK trip further away):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\2_TripFurtherAway
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_03_10_CKT_AutoLoggingTest_JVK\2_TripFurtherAway
 %   2017 auto GPS logging test 3 (JVK trip near campus):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\3_TripAroundCampus
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_03_10_CKT_AutoLoggingTest_JVK\3_TripAroundCampus
 %   2017 auto GPS logging more tests (Before 2017 harvest):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\CKT_AutoLoggingTest_JVK_2017_03_10\4_MoreTestsBefore2017Harvest
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_03_10_CKT_AutoLoggingTest_JVK\4_MoreTestsBefore2017Harvest
 %   2017 harvest:
 %         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_2017
 %        or fullfile('..', '..', '..',  'Harvest_Ballet_2017');
@@ -34,16 +37,16 @@
 %        or fullfile('..', '..', '..',  'Harvest_Ballet_2017_CktOnly');
 %
 %   2017 data from Amelia:
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Amelia_2017\Valid
-%        or fullfile('..', '..', '..',  'Amelia_2017','Valid');
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_Amelia\Valid
+%        or fullfile('..', '..', '..',  '2017_Amelia','Valid');
 %
 %   2017 drilling (temperary):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_Drilling_2017\20171108
-%        or fullfile('..', '..', '..',  'Harvest_Ballet_Drilling_2017',
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_Harvest_Ballet_Drilling\20171108
+%        or fullfile('..', '..', '..',  '2017_Harvest_Ballet_Drilling',
 %        '20171108');
 %   2017 drilling (full data set):
-%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\Harvest_Ballet_Drilling_2017\20171204
-%        or fullfile('..', '..', '..',  'Harvest_Ballet_Drilling_2017',
+%         C:\Users\Zyglabs\Documents\MEGAsync\GpsDataVisualizationAndAnalysis\2017_Harvest_Ballet_Drilling\20171204
+%        or fullfile('..', '..', '..',  '2017_Harvest_Ballet_Drilling',
 %        '20171204');
 %
 % Update 01/22/2018: Data moved to OneDrive.
@@ -53,10 +56,38 @@
 %         purdue.edu\GpsDataVisualizationAndAnalysis\Amelia_2018_01\Valid
 %        or fullfile('..', '..', '..',  'Amelia_2018_01','Valid');
 %
-fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2017');
+%   2018 rate test with mesh network at Purdue:
+%         C:\Users\Zyglabs\OneDrive -
+%         purdue.edu\GpsDataVisualizationAndAnalysis\CKT_20180627_RateTestWithMeshNet\
+%        or fullfile('..', '..', '..',
+%        'CKT_20180627_RateTestWithMeshNet');
+%
+%   2018 wheat harvesting:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2018');
+%
+%   2018 speed test during wheat harvesting:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2018_Wifi_Test');
+%
+%   2018 data for He and Amy:
+%       fullfile('..', '..', '..',  '2018_GpsCollectionForHeAndAmy',
+%       'AtAaronsFarm');
+%
+%   2019:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2019');
+%
+%   2019 data from Aaron:
+%       fullfile('..', '..', '..',  '2019_12_06_Aaron');
+%
+%   2020:
+%       fullfile('..', '..', '..',  'Harvest_Ballet_2020');
+%
+%   2020 data for writing "OATS" with GPS tracks from Matt:
+%       fullfile('..', '..', '..',  '2020_11_17_TrackForOats_Matt');
+
+fileFolder = fullfile('..', '..', '..', '2020_11_17_TrackForOats_Matt');
 IS_RELATIVE_PATH = true;
-%fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
-%IS_RELATIVE_PATH = true;
+% fileFolder = fullfile('..', '..', '..',  'Harvest_Ballet_2015');
+% IS_RELATIVE_PATH = true;
 MIN_SAMPLE_NUM_TO_IGNORE = 20;
 
 % If the GPS data has already loaded, you can set this flag to be true and
@@ -67,7 +98,7 @@ USE_GPS_DATA_VARIABLES_IN_CURRENT_WORKSPACE = true;
 % The same for the location classification results.
 USE_LOCATIONS_IN_CURRENT_WORKSPACE = true;
 
-% The length of the side of the square by meters. It's used for computing
+% The length of the side of the square in meters. It's used for computing
 % the device independent sample density of each sample point.
 %   Device independent sample density
 %     = Sample number in a square / sample rate / square area
@@ -82,7 +113,7 @@ FORCE_REDO_STATE_RECOGNITION = false;
 
 % Clear command window. Close all plot & web map display windows.
 %clc;
-close all;wmclose all;
+close all; wmclose all;
 
 % Changed folder to "ScriptsAndFunctions" first.
 cd(fullfile(fileparts(which(mfilename)),'..', '..'));
@@ -133,6 +164,71 @@ else
     toc;
     disp('Pre-processing: Done!');
 end
+
+%% Generate Four Overview Figures for the GPS Data
+
+% For the data collected among the AgriNovus, generate some customized
+% visualization results, instead.
+[~, fileFolderName] = fileparts(fileFolder);
+if strcmp(fileFolderName, '2020_11_17_TrackForOats_Matt')
+    % This will also terminate the script.
+    genVisualizationsForAgriNovusChallenge;
+end
+
+% Overview.
+hGpsOverview = figure; hold on;
+hT = plot(vertcat(files(fileIndicesTrucks).lon), ...
+    vertcat(files(fileIndicesTrucks).lat), '.', 'Color', [1 1 1].*0.8);
+hC = plot(vertcat(files(fileIndicesCombines).lon), ...
+    vertcat(files(fileIndicesCombines).lat), '.', 'Color', 'y');
+hK = plot(vertcat(files(fileIndicesGrainKarts).lon), ...
+    vertcat(files(fileIndicesGrainKarts).lat), '.', 'Color', 'b');
+plot_google_map('MapType', 'satellite');
+xticks([]);
+yticks([]);
+xlabel('Longitude')
+ylabel('Latitude')
+legend([hC, hK, hT], 'Combine', 'Grain kart', 'Truck')
+
+% Combine.
+hGpsOverviewC = figure;
+hC = plot(vertcat(files(fileIndicesCombines).lon), ...
+    vertcat(files(fileIndicesCombines).lat), '.', 'Color', 'y');
+plot_google_map('MapType', 'satellite');
+xticks([]);
+yticks([]);
+xlabel('Longitude')
+ylabel('Latitude')
+legend(hC, 'Combine')
+
+% Grain cart.
+hGpsOverviewK = figure;
+hK = plot(vertcat(files(fileIndicesGrainKarts).lon), ...
+    vertcat(files(fileIndicesGrainKarts).lat), '.', 'Color', 'b');
+plot_google_map('MapType', 'satellite');
+xticks([]);
+yticks([]);
+xlabel('Longitude')
+ylabel('Latitude')
+legend(hK, 'Grain kart')
+
+% Truck.
+hGpsOverviewT = figure;
+hT = plot(vertcat(files(fileIndicesTrucks).lon), ...
+    vertcat(files(fileIndicesTrucks).lat), '.', 'Color', [1 1 1].*0.8);
+plot_google_map('MapType', 'satellite');
+xticks([]);
+yticks([]);
+xlabel('Longitude')
+ylabel('Latitude')
+legend(hT, 'Truck')
+
+pathToSaveGpsOverviewPlots = fullfile(fileFolderSet, ...
+    '_AUTOGEN_IMPORTANT');
+saveas(hGpsOverview, fullfile(pathToSaveGpsOverviewPlots, 'GpsOverview.png'));
+saveas(hGpsOverviewC, fullfile(pathToSaveGpsOverviewPlots, 'GpsOverviewC.png'));
+saveas(hGpsOverviewK, fullfile(pathToSaveGpsOverviewPlots, 'GpsOverviewK.png'));
+saveas(hGpsOverviewT, fullfile(pathToSaveGpsOverviewPlots, 'GpsOverviewT.png'));
 
 %% Compute Device-Independent Sample Densities
 % Implements algorithm 1 without excluding adjacent points. See
@@ -195,6 +291,9 @@ pathInFieldClassificationFieldShapes = fullfile(...
     pathInFieldClassificationFilefolder, ...
     strcat('filesLoadedLocationsFieldShapes','.mat')...
     );
+pathFigLocLablesForC = fullfile(...
+    pathInFieldClassificationFilefolder, ...
+    'filesLoadedLocationsForCombine');
 
 if USE_LOCATIONS_IN_CURRENT_WORKSPACE && exist('locations', 'var')
     disp('naiveTrain: Reuse the variable locations in the current workspace.');
@@ -212,7 +311,7 @@ else
     else
         % Create the variables locations and fieldShapes to store the
         % results. Note that filedShapes contains the alpha shapes are
-        % exactly what we build from infield points, so they man contain
+        % exactly what we build from infield points, so they may contain
         % holes.
         locations = cell(length(files),1);
         % Since we don't know how many field shapes will be generated,
@@ -230,6 +329,15 @@ else
         save(pathInFieldClassificationFile, 'locations');
         save(pathInFieldClassificationFieldShapes, 'fieldShapes');
         toc;
+        
+        % Plot the labels for combines for debugging.
+        hFigLocLablesForC = figure;
+        plot3k([vertcat(files(fileIndicesCombines).lon), ...
+            vertcat(files(fileIndicesCombines).lat), ...
+            vertcat(locations{fileIndicesCombines})]);
+        curAspect = daspect; daspect([1 1 curAspect(3)]);
+        saveas(hFigLocLablesForC, [pathFigLocLablesForC, '.fig']);
+        saveas(hFigLocLablesForC, [pathFigLocLablesForC, '.png']);
     end
 end
 disp('naiveTrain: Done!');
@@ -390,6 +498,61 @@ else
     disp('naiveTrain: Saving statesByDist...');
     tic;
     save(pathStatesByDistFile, 'statesByDist');
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Extend Field Shapes by Statistical Harvesting
+
+disp('-------------------------------------------------------------');
+disp('naiveTrain: Extending field shapes by statistical harvesting...');
+
+% The folder where the results are saved.
+pathExtendedEnhancedFieldShapesFolder = fullfile(fileFolderSet, ...
+    '_AUTOGEN_IMPORTANT');
+pathExtendedEnhancedFieldShapesFile = fullfile(...
+    pathExtendedEnhancedFieldShapesFolder, ...
+    strcat('extendedEnhancedFieldShapes','.mat')...
+    );
+pathExtendedEnhancedFieldShapesUtmFile = fullfile(...
+    pathExtendedEnhancedFieldShapesFolder, ...
+    strcat('extendedEnhancedFieldShapesUtm','.mat')...
+    );
+
+% Try loading corresponding history record first.
+if exist(pathExtendedEnhancedFieldShapesFile,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp(['naiveTrain: Loading history results from ', ...
+        'extendedEnhancedFieldShapes.m...']);
+    tic;
+    load(pathExtendedEnhancedFieldShapesFile);
+    toc;
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating extendedEnhancedFieldShapes...');
+    tic;
+    
+    % Create the directory if necessary.
+    if ~exist(pathExtendedEnhancedFieldShapesFolder,'dir')
+        mkdir(pathExtendedEnhancedFieldShapesFolder);
+    end
+    
+    % Extend field shape boundaries.
+    extendFieldShapes;
+    
+    toc;
+    disp('naiveTrain: Done!');
+    
+    % Save extendedEnhancedFieldShapes in a history .mat file.
+    disp(' ');
+    disp('naiveTrain: Saving extendedEnhancedFieldShapes...');
+    tic;
+    save(pathExtendedEnhancedFieldShapesFile, ...
+        'extendedEnhancedFieldShapes');
+    save(pathExtendedEnhancedFieldShapesUtmFile, ...
+        'extendedEnhancedFieldShapesUtm');
     toc;
     disp('naiveTrain: Done!');
 end
@@ -610,7 +773,7 @@ else
     end
     
     % Make the figure interactive.
-    evalin('base', 'clear interactiveTraceTreeOverviewCallbackMeta');    
+    evalin('base', 'clear interactiveTraceTreeOverviewCallbackMeta');
     hTreeOverviewProAxes = findall(hTreeOverviewPro, 'type', 'axes');
     set(hTreeOverviewProAxes,'ButtonDownFcn', @(src,evnt) ...
         interactiveTraceTreeOverviewCallback(src, evnt, ...
@@ -618,6 +781,35 @@ else
         'HitTest','on');
     
     saveas(hTreeOverviewPro, [pathTraceabilityTreeOverview, '_Interactive.fig']);
+    toc;
+    disp('naiveTrain: Done!');
+end
+
+%% Convert the Tree Object to JSON String for External Programs
+
+% The files where the results are saved.
+pathToSaveTreeJsonStr = fullfile(...
+    pathProductTraceabilityFilefolder, ...
+    strcat('traceabilityTreeJsonStr','.json')...
+    );
+
+% Checking whether the JSON has already been created or not.
+if exist(pathToSaveTreeJsonStr,'file') ...
+        && ~FORCE_REDO_STATE_RECOGNITION
+    disp(' ');
+    disp('naiveTrain: traceabilityTreeJsonStr.json is already generated.');
+    disp('naiveTrain: Done!');
+else
+    disp(' ');
+    disp('naiveTrain: Generating traceabilityTreeJsonStr.json ...');
+    tic;
+    
+    traceabilityTreeJsonStr = convertTreeToJson(traceabilityTree);
+    
+    fIdTreeJsonStr = fopen(pathToSaveTreeJsonStr,'wt');
+    fprintf(fIdTreeJsonStr, traceabilityTreeJsonStr);
+    fclose(fIdTreeJsonStr);
+    
     toc;
     disp('naiveTrain: Done!');
 end

@@ -109,10 +109,11 @@ for SQUARE_SIDE_LENGTH = 200%50:10:1500
             end
             
             % Compute device sample rate in kHz.
-            deviceSampleRate = length(time)/(time(end)-time(1));
+            deviceSampleRateInKHz = (length(time)-1)/(time(end)-time(1));
             % Then we can compute the denominator part for computer the
             % sample density.
-            denominatorForSampleDensity = deviceSampleRate * (SQUARE_SIDE_LENGTH^2);
+            denominatorForSampleDensity = ...
+                deviceSampleRateInKHz*(SQUARE_SIDE_LENGTH^2);
             
             %% Map
             if MAP

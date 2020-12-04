@@ -1,4 +1,4 @@
-function [ harvestedPts, fieldShapeUtm, fieldShapeUtmZone ] ...
+function [ harvestedPts, fieldShapeUtm, fieldShapeUtmZone, grid ] ...
     = statisticalHarvestTruc( files, filesNumIds, ...
     states, fieldShape, gridWidth, headerWidth, harvDistribution)
 %STATISTICALHARVESTTRUC Carry out the truncated version of the statistical
@@ -39,6 +39,8 @@ function [ harvestedPts, fieldShapeUtm, fieldShapeUtmZone ] ...
 %     used to compute a dynamic harvDistribution for each point. If a
 %     function is provided, that function will be used without any
 %     modification for each point.
+%   - grid
+%     The grid used in the statistical harvesting.
 %
 % Outputs:
 %   - harvestedPts
@@ -68,8 +70,11 @@ function [ harvestedPts, fieldShapeUtm, fieldShapeUtmZone ] ...
 %
 % Requires the external Matlab function deg2utm.m (available online).
 %
+% Update 06/04/2019: Fixed the bug in locating boundary points.
+%
 % Yaguang Zhang, Purdue, 05/17/2017
 
+disp('------ statisticalHarvestTruc ------');
 disp(' => Preprocessing ... ');
 tic;
 
@@ -81,7 +86,17 @@ if nargin<7
     end
 end
 
+% The number of digits to be considered for determining wether two GPS
+% location points are the same.
+GPS_PT_DEC_PRECISION = 7;
+
+% We will extend to the past and the future this number of samples for the
+% GPS track segment to be evaluated to get better field shapes.
+NUM_GPS_EXTRA_PTS_TO_INSPECT_PER_SIDE = 5; % According to 2018 field 19.
+
 %% Get Harvesting Samples
+
+disp('        Locating boundery points ... ');
 
 % For replying using the GPS time, only consider samples that are from
 % combines, in the field and are harvesting.
@@ -99,31 +114,55 @@ for idxFile = 1:length(files)
     numSamplesExpected = length(files(idxFile).accuracy);
     if(length(files(idxFile).gpsTime) ~= numSamplesExpected)
         files(idxFile) = subFile(files(idxFile),1,numSamplesExpected);
-        states{filesNumIds(idxFile)} = states{filesNumIds(idxFile)}(1:numSamplesExpected,:);
+        states{filesNumIds(idxFile)} ...
+            = states{filesNumIds(idxFile)}(1:numSamplesExpected,:);
     end
-
+    
     if(strcmp(files(idxFile).type, 'Combine'))
         comFile = files(idxFile);
-        comState = states(filesNumIds(idxFile));
+        comState = states{filesNumIds(idxFile)};
         if (fieldShape.Alpha>0)
-        boolsSamplesToUse = ...
-            inShape(fieldShape, comFile.lon, comFile.lat) ...
-            & (comState{:,1} == 0);
-        else
+            % Input is a field shape.
             boolsSamplesToUse = ...
-                ismember([comFile.lon comFile.lat],...
-                fieldShape.Points, 'rows') ...
-                & (comState{:,1} == 0);
+                inShape(fieldShape, comFile.lon, comFile.lat) ...
+                & (comState(:,1) == 0);
+        else
+            % Input is a field boundary.
+            boolsSamplesToUse = ...
+                ismember( ...
+                round([comFile.lon comFile.lat], GPS_PT_DEC_PRECISION), ...
+                round(fieldShape.Points, GPS_PT_DEC_PRECISION), ...
+                'rows') ...
+                & (comState(:,1) == 0);
         end
-        % Update: Add a lower bound of 0 and an upper bound of 4m/s for speed.
-        boolsSamplesToUse = boolsSamplesToUse & (comFile.speed>0) & (comFile.speed<4);
+        
+        % Update: Extend each segment to both the past and the future a
+        % little bit to prevent missing "being harvested" probability
+        % evaluations between segments that are close geometrically.
+        [indicesStarts, indicesEnds] = findConsecutiveSubSeq(boolsSamplesToUse, 1);
+        maxIndexEnd = length(boolsSamplesToUse);
+        for idxCurSeg = 1:length(indicesStarts)
+            curIdxSta = indicesStarts(idxCurSeg);
+            curIdxEnd = indicesEnds(idxCurSeg);
+            curIdxSta = max(1, ...
+                curIdxSta-NUM_GPS_EXTRA_PTS_TO_INSPECT_PER_SIDE);
+            curIdxEnd = min(maxIndexEnd, ...
+                curIdxEnd+NUM_GPS_EXTRA_PTS_TO_INSPECT_PER_SIDE);
+            boolsSamplesToUse(curIdxSta:curIdxEnd) = 1;
+        end
+        
+        % Update: Add a lower bound of 0 and an upper bound of 4m/s for
+        % speed.
+        boolsSamplesToUse ...
+            = boolsSamplesToUse & (comFile.speed>0) & (comFile.speed<4);
+        
         newFileHarv = subFile(comFile, boolsSamplesToUse);
         if (~isempty(newFileHarv.gpsTime))
             filesHarv(end+1) = newFileHarv; %#ok<AGROW>
             filesHarvIndices(end+1) = idxFile; %#ok<AGROW>
             filesHarvSamplesIndices{end+1} = find(boolsSamplesToUse); %#ok<AGROW>
         end
-
+        
         % [ vehHeading, isForwarding, x, y, utmZones, refBearing, ...
         %    hFigArrOnTrack, hFigDiffHist ] ... = estimateVehicleHeading(
         %    file, DEBUG )
@@ -142,7 +181,9 @@ numSamplesHarv = sum(arrayfun(@(f) length(f.gpsTime),filesHarv));
 %    1 - gpsTime
 %     2 - Sample index
 %    3 - File index in files
-%     4 & 5 - UTM coordinates 6 - heading 7 - gpsAccuracy
+%     4 & 5 - UTM coordinates
+%    6 - heading
+%     7 - gpsAccuracy
 gpsTimesHarv = nan(numSamplesHarv,7);
 idxToSetStart = 1;
 for idxFileHarv = 1:length(filesHarv)
@@ -156,7 +197,7 @@ for idxFileHarv = 1:length(filesHarv)
     gpsTimesHarv(indicesToSet,2) = indicesHarvSamples;
     % GPS times for these samples.
     gpsTimesHarv(indicesToSet,1) = filesHarv(idxFileHarv).gpsTime;
-
+    
     % Other info.
     gpsTimesHarv(indicesToSet,4:5) ...
         = [xs{idxInFiles}(indicesHarvSamples), ...
@@ -165,7 +206,7 @@ for idxFileHarv = 1:length(filesHarv)
         = vehHeadings{idxInFiles}(indicesHarvSamples);
     gpsTimesHarv(indicesToSet,7) = ...
         files(idxInFiles).accuracy(indicesHarvSamples);
-
+    
     idxToSetStart = idxToSetEnd+1;
 end
 
@@ -173,6 +214,8 @@ end
 gpsTimesHarv = sortrows(gpsTimesHarv,1);
 
 %% Generate the Grid in the UTM Coordinate
+
+disp('        Generating field grid ... ');
 
 % First convert the fieldShape into a UTM one, using alpha that is slightly
 % larger than that computed in our paper "Dynamic High-Precision Field
@@ -192,10 +235,11 @@ maxY = max(fieldShapeUtm.Points(:,2))+fieldExtendedLen;
 % Resize to column vectors.
 gridXs = gridXs(:);
 gridYs = gridYs(:);
+grid = [gridXs gridYs];
+
 % % Get rid of the grid points that are outside of the field.
 % boolsGridNotInField = ~inShape(fieldShapeUtm, gridXs, gridYs);
-% gridXs(boolsGridNotInField) = [];
-% gridYs(boolsGridNotInField) = [];
+% gridXs(boolsGridNotInField) = []; gridYs(boolsGridNotInField) = [];
 
 % Initialize harvestedPts for the grid.
 harvestedPts(length(gridXs)) = struct();
@@ -212,6 +256,8 @@ for idxGridPt = 1:length(gridXs)
 end
 
 toc;
+
+disp('    Done!');
 
 %% Statistical Harvesting
 
@@ -242,7 +288,7 @@ for idxSampleHarv = 1:numSamplesHarv
             num2str(numSamplesHarv),' samples)']);
         %tic;
     end
-
+    
     idxFileInFiles = gpsTimesHarv(idxSampleHarv,3);
     idxSample = gpsTimesHarv(idxSampleHarv,2);
     % The UTM coordinates for this GPS sample.
@@ -253,7 +299,7 @@ for idxSampleHarv = 1:numSamplesHarv
     % We will create a polygon representing the area being harvested using
     % this sample and its next one, so we need to first make sure this
     % sample is not the last one in the track.
-    if (idxSample <= length(files(idxFileInFiles).gpsTime))
+    if (idxSample < length(files(idxFileInFiles).gpsTime))
         harvPolyEdgeStaPt1 = harvPolyEdgeStaPts(idxSampleHarv,:);
         harvPolyEdgeEndPt1 = harvPolyEdgeEndPts(idxSampleHarv,:);
         % Create the polygon to harvest according to the edges of current
@@ -268,19 +314,20 @@ for idxSampleHarv = 1:numSamplesHarv
         else
             idxNextSample = idxSample+1;
             % We do not have the edge stored. Compute it.
-            [harvPolyEdgeStaPt2, harvPolyEdgeEndPt2] = extractHarvPolyEdge( ...
+            [harvPolyEdgeStaPt2, harvPolyEdgeEndPt2] ...
+                = extractHarvPolyEdge( ...
                 xs{idxFileInFiles}(idxNextSample), ...
                 ys{idxFileInFiles}(idxNextSample), ...
                 vehHeadings{idxFileInFiles}(idxNextSample), ...
                 files(idxFileInFiles).accuracy(idxNextSample), ...
                 headerWidth);
         end
-
+        
         % The polygon.
         verticesHarvPoly = [harvPolyEdgeStaPt1; harvPolyEdgeEndPt1; ...
             harvPolyEdgeEndPt2;harvPolyEdgeStaPt2;harvPolyEdgeStaPt1];
         % Find grid points that are harvested. To improve the performance,
-        % we first fitler the points with a box before using inpolygon.
+        % we first filter the points with a box before using inpolygon.
         harvBox = [min(verticesHarvPoly(:,1)), ... min x
             max(verticesHarvPoly(:,1)), ... max x
             min(verticesHarvPoly(:,2)), ... min y
@@ -309,10 +356,10 @@ for idxSampleHarv = 1:numSamplesHarv
         for idxIndicesGridPtHarv = 1:length(indicesGridPtHarv)
             idxGridPt = indicesGridPtHarv(idxIndicesGridPtHarv);
             dist = dists(idxIndicesGridPtHarv);
-
+            
             probMargin = 1 - harvestedPts(idxGridPt).probOfHarvested;
             newProbHarv = probMargin*harvDistribution(dist);
-
+            
             harvestedPts(idxGridPt).harvLogFileIds(end+1) ...
                 = gpsTimesHarv(idxSampleHarv,3);
             harvestedPts(idxGridPt).harvLogProbs(end+1) = newProbHarv;
@@ -321,7 +368,8 @@ for idxSampleHarv = 1:numSamplesHarv
         end
     end
 end
-toc; 
-disp('Done!')
 
+disp('Done!')
+toc;
+disp('------------------------------------');
 % EOF

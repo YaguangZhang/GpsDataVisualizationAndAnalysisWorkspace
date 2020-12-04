@@ -23,6 +23,16 @@ function [ status ] = interactiveTraceTreeOverviewCallback(src, evnt, ...
 % (end time) to its last unloading event (start time), excluding end time
 % points.
 FLAG_PLOT_RELEVANT_TRUCK_TRACKS = true;
+HIGHLIGHTED_EDGE_STYLE = '-';
+HIGHLIGHTED_EDGE_COLOR = [0.3010, 0.7450, 0.9330];
+HIGHLIGHTED_ANCESTORS_MAKER = 'mo';
+HIGHLIGHTED_CURRENT_MAKER = 'r*';
+HIGHLIGHTED_DESCENDENTS_MAKER = 'bo';
+HIGHLIGHTED_CIRCLE_MARKER_SIZE = 35;
+HIGHLIGHTED_STAR_MARKER_SIZE = 45;
+HIGHLIGHTED_MARKER_LINE_WIDTH = 1;
+
+DATA_TIME_CONVERTION_TIME_ZONE = 'America/Denver';
 
 % Change the background color to indicate the click worked.
 interTreeViewAxes = gca;
@@ -73,6 +83,29 @@ ptOnClick = evnt.IntersectionPoint(1:2);
 % Display the node.
 disp('    InterTraceTree: The node below has been selected. ');
 disp(traceTree(idxNodeChosen));
+% Display event start and end time with human readable strings.
+disp('    InterTraceTree: Fetching transfer event time info... ');
+disp(['        TimeZone: ', DATA_TIME_CONVERTION_TIME_ZONE]);
+eventStartDateTime = datetime( ...
+    traceTree(idxNodeChosen).estiGpsTimeStartUnloading/1000, ...
+    'convertfrom','posixtime', 'TimeZone', DATA_TIME_CONVERTION_TIME_ZONE);
+eventEndDateTime = datetime( ...
+    traceTree(idxNodeChosen).estiGpsTimeEndUnloading/1000, ...
+    'convertfrom','posixtime', 'TimeZone', DATA_TIME_CONVERTION_TIME_ZONE);
+if isnat(eventStartDateTime)
+    eventStartDateTimeStr = 'Not available';
+else
+    eventStartDateTimeStr = datestr(eventStartDateTime);
+end
+if isnat(eventEndDateTime)
+    eventEndDateTimeStr = 'Not available';
+else
+    eventEndDateTimeStr = datestr(eventEndDateTime);
+end
+disp(['        Start at: ', eventStartDateTimeStr]);
+disp(['          End at: ', eventEndDateTimeStr]);
+disp(' ');
+
 disp('    InterTraceTree: Tracing up and down the tree ... ');
 % Find all ancestor nodes.
 idsForAllNodes = arrayfun(@(n) n.nodeId, traceTree, ...
@@ -125,22 +158,27 @@ end
 % Highlight the edges.
 interactiveTraceTreeOverviewCallbackMeta.hEdges ...
     = plot(interTreeViewAxes, xsEdge, ...
-    ysEdge, '-', 'Color', [0.3010, 0.7450, 0.9330]);
+    ysEdge, HIGHLIGHTED_EDGE_STYLE, 'Color', HIGHLIGHTED_EDGE_COLOR);
 uistack(interactiveTraceTreeOverviewCallbackMeta.hEdges, 'bottom');
-circleMarkerSize = 30;
 % Highlight the ancestor nodes.
 interactiveTraceTreeOverviewCallbackMeta.hAncestors ...
     = scatter(interTreeViewAxes, nodeCoors(indicesAllAncestorNodes,1), ...
-    nodeCoors(indicesAllAncestorNodes,2), circleMarkerSize, 'om');
+    nodeCoors(indicesAllAncestorNodes,2), ...
+    HIGHLIGHTED_CIRCLE_MARKER_SIZE, ...
+    HIGHLIGHTED_ANCESTORS_MAKER, ...
+    'LineWidth', HIGHLIGHTED_MARKER_LINE_WIDTH);
 uistack(interactiveTraceTreeOverviewCallbackMeta.hAncestors, 'bottom');
 % Highlight the currently chosen nodes.
 interactiveTraceTreeOverviewCallbackMeta.hNodeChosen ...
     = scatter(interTreeViewAxes, nodeCoors(idxNodeChosen,1), ...
-    nodeCoors(idxNodeChosen,2), 'r*');
+    nodeCoors(idxNodeChosen,2), HIGHLIGHTED_STAR_MARKER_SIZE, ...
+    HIGHLIGHTED_CURRENT_MAKER, 'LineWidth', HIGHLIGHTED_MARKER_LINE_WIDTH);
 % Highlight the descendant nodes.
 interactiveTraceTreeOverviewCallbackMeta.hDescendant ...
     = scatter(interTreeViewAxes, nodeCoors(indicesAllDescendantNodes,1), ...
-    nodeCoors(indicesAllDescendantNodes,2), circleMarkerSize, 'ob');
+    nodeCoors(indicesAllDescendantNodes,2), ...
+    HIGHLIGHTED_CIRCLE_MARKER_SIZE, ...
+    HIGHLIGHTED_DESCENDENTS_MAKER, 'LineWidth', HIGHLIGHTED_MARKER_LINE_WIDTH);
 uistack(interactiveTraceTreeOverviewCallbackMeta.hDescendant, 'bottom');
 
 % Generate the map view.
@@ -379,14 +417,21 @@ if ~isempty(nodeIndicesSwaths)
             = nodeIndicesSwaths(ancestorEleIndices==curIdxAncEle);
         curLatLonSwaths = vertcat(gpsSampsHarvested{curNodeIndicesSwaths});
         
-        hMapViewTraceUpSwaths{idxUniqAncEle} = plot(mapViewTraceUpAxes, ...
-            curLatLonSwaths(:,2), curLatLonSwaths(:,1), ...
-            '.', 'Color', colorsEle(mod(idxUniqAncEle, numColorsEle),:));
-        flagMapViewTraceUpEmpty = false;
+        if ~isempty(curLatLonSwaths)
+            hMapViewTraceUpSwaths{idxUniqAncEle} = plot(mapViewTraceUpAxes, ...
+                curLatLonSwaths(:,2), curLatLonSwaths(:,1), ...
+                '.', 'Color', colorsEle(mod(idxUniqAncEle, numColorsEle),:));
+            flagMapViewTraceUpEmpty = false;
+        end
         
-        % Get the ID of the elevator.
-        nodeIdsMapViewTraceUpEle{idxUniqAncEle} ...
-            = traceTree(curIdxAncEle).nodeId;
+        if ~isnan(curIdxAncEle)
+            % Get the ID of the elevator.
+            nodeIdsMapViewTraceUpEle{idxUniqAncEle} ...
+                = traceTree(curIdxAncEle).nodeId;
+        else
+            nodeIdsMapViewTraceUpEle{idxUniqAncEle} ...
+                = 'Unknown';
+        end
     end
     
     % Plot the truck tracks if necessary.

@@ -45,8 +45,16 @@ addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'StatisticalHarvesting'));
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'CornerDetector'));
 % For product traceability.
 addpath(fullfile(pwd, 'Training', 'NaiveTrain', 'ProductTraceability'));
+% For the new Wifi-logger.
+addpath(fullfile(pwd, '..', '..', 'PavementPatchingTracker', ...
+    'ScriptsAndFunctions', 'NewWifiLogger', 'Functions'));
+% Vehicle movement pattern exploration for V2V communication.
+addpath(fullfile(pwd, 'V2VCommunication'));
 
 % ScriptsAndFunctions/DataProcessing
 addpath(fullfile(pwd, 'DataProcessing'));
+
+% For harvest progress monitoring.
+addpath(fullfile(pwd, 'HarvestProgress'));
 
 % EOF

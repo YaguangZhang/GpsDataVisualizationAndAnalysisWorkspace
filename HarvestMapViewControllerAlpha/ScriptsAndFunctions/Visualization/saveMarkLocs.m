@@ -1,0 +1,26 @@
+function saveMarkLocs(~, ~)
+%SAVEMARKLOCS Save the variable markLocs.
+%
+%   We will save the variable markLocs in the base workspace into the file
+%   specified by the variable absPathToSaveMarkerLocs in the base
+%   workspace.
+%
+% Inputs:
+%   - src, evnt
+%     The source and event which triggers this callback function.
+%
+% Yaguang Zhang, Purdue, 05/29/2018
+
+if evalin('base', 'exist(''markLocs'', ''var'')')    
+    markLocs = evalin('base', 'markLocs');
+    ABS_PATH_TO_SAVE_TREE_LOCS = evalin('base', ...
+        'absPathToSaveMarkerLocs');
+
+    save(ABS_PATH_TO_SAVE_TREE_LOCS, 'markLocs');
+    disp('saveMarkLocs: markLocs saved to file!')
+end
+closereq;
+
+end
+
+% EOF
